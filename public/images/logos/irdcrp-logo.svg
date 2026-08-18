@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 170" role="img" aria-labelledby="title desc">
+  <title id="title">IRDCRP</title>
+  <desc id="desc">Integrated Rurban Development and Climate Resilience Project logo mark.</desc>
+  <rect width="140" height="170" rx="18" fill="#ffffff"/>
+  <circle cx="70" cy="61" r="48" fill="#ffffff" stroke="#004f59" stroke-width="7"/>
+  <path d="M28 91c18-30 48-35 84-23" fill="none" stroke="#004f59" stroke-width="7" stroke-linecap="round"/>
+  <path d="M24 106c34-16 67-11 96 3" fill="#55a978"/>
+  <path d="M33 118c31-15 62-15 93 2" fill="#64c9cb"/>
+  <path d="M20 132c37-27 77-33 111-25" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round"/>
+  <path d="M73 103c-4-25 16-40 32-44-2 19-9 34-32 44Z" fill="#235236"/>
+  <path d="M63 103c-5-23-23-36-41-43 0 21 13 36 41 43Z" fill="#235236"/>
+  <path d="M67 107c-2-22 0-35 9-46" stroke="#ffffff" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <g fill="#ffc928">
+    <circle cx="45" cy="34" r="12"/>
+    <path d="M45 12v10M45 46v10M23 34h10M57 34h10M30 19l7 7M60 19l-7 7M30 49l7-7M60 49l-7-7" stroke="#ffc928" stroke-width="4" stroke-linecap="round"/>
+  </g>
+  <path d="M76 60c8 2 12 5 19 10M87 77c7 1 12 4 17 8" stroke="#238bd0" stroke-width="5" stroke-linecap="round" stroke-dasharray="7 10"/>
+  <text x="70" y="153" text-anchor="middle" font-family="Figtree, Arial, sans-serif" font-size="28" font-weight="900" fill="#004f59" letter-spacing="3">IRDCRP</text>
+</svg>

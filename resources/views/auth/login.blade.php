@@ -3,7 +3,7 @@
         <div class="auth-card-header">
             <span class="auth-card-kicker">Secure access</span>
             <h2 class="auth-card-title">Admin Login</h2>
-            <p class="auth-card-subtitle">Sign in with your official credentials.</p>
+            <p class="auth-card-subtitle">Sign in with your official MIS credentials.</p>
         </div>
 
         <x-auth-session-status class="auth-alert auth-alert-success" :status="session('status')" />
@@ -76,7 +76,7 @@
 
         <p class="auth-switch">
             {{ __("Don't have an account?") }}
-            <a href="{{ route('register') }}" class="auth-link auth-link-bold">{{ __('Create staff account') }}</a>
+            <a href="{{ route('register') }}" class="auth-link auth-link-bold">{{ __('Register here') }}</a>
         </p>
     </div>
 </x-guest-layout>

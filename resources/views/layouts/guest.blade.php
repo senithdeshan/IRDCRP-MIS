@@ -21,18 +21,14 @@
             <main class="auth-stage">
                 <aside class="auth-photo-timeline" aria-hidden="true">
                     <div class="auth-slide-frame">
-                        <img src="{{ asset('images/auth/timeline-1.jpg') }}" alt="" class="auth-slide auth-slide-one">
-                        <img src="{{ asset('images/auth/timeline-2.jpg') }}" alt="" class="auth-slide auth-slide-two">
-                        <img src="{{ asset('images/auth/timeline-3.jpg') }}" alt="" class="auth-slide auth-slide-three">
-                        <img src="{{ asset('images/auth/timeline-4.jpg') }}" alt="" class="auth-slide auth-slide-four">
+                        <img src="{{ asset($isRegister ? 'images/auth/register-background.jpg' : 'images/auth/timeline-1.jpg') }}" alt="" class="auth-slide auth-slide-one">
                         <div class="auth-slide-caption">
-                            <span>IRDCRP Field Stories</span>
-                            <strong>Farmers, fields and resilience</strong>
+                            <span>{{ $isRegister ? 'IRDCRP staff access' : 'IRDCRP field stories' }}</span>
+                            <strong>{{ $isRegister ? 'Register for secure MIS access' : 'Farmers, fields and resilience' }}</strong>
                         </div>
                     </div>
                     <div class="auth-slide-dots">
-                        <span></span>
-                        <span></span>
+                        <span class="is-active"></span>
                         <span></span>
                         <span></span>
                     </div>

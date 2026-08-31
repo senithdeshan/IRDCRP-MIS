@@ -1,9 +1,9 @@
 <x-guest-layout>
     <div class="auth-card">
         <div class="auth-card-header">
-            <span class="auth-card-kicker">Staff registration</span>
-            <h2 class="auth-card-title">Create Account</h2>
-            <p class="auth-card-subtitle">Register your staff account for IRDCRP MIS access.</p>
+            <span class="auth-card-kicker">MIS registration</span>
+            <h2 class="auth-card-title">Register Account</h2>
+            <p class="auth-card-subtitle">Create a staff account for IRDCRP MIS access. Super-admin approval may be required.</p>
         </div>
 
         <form method="POST" action="{{ route('register') }}" class="auth-form">
@@ -92,7 +92,7 @@
 
             <div class="auth-info-box">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-4 w-4 shrink-0" aria-hidden="true"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>
-                <p>Your account will be linked to IRDCRP staff records. Contact your administrator for role assignment after registration.</p>
+                <p>Your account will be linked to IRDCRP staff records. Contact the super admin for access approval and role assignment.</p>
             </div>
 
             <button type="submit" class="auth-btn-primary">

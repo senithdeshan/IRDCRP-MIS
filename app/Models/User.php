@@ -52,4 +52,15 @@ class User extends Authenticatable
             'permissions' => 'array',
         ];
     }
+
+    public function isSuperAdmin(): bool
+    {
+        return $this->role === 'super_admin';
+    }
+
+    public function isProtectedSuperAdmin(): bool
+    {
+        return $this->isSuperAdmin()
+            && strcasecmp($this->email, config('app.protected_super_admin_email', 'admin@irdcrp.lk')) === 0;
+    }
 }

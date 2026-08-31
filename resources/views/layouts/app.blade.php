@@ -19,6 +19,43 @@
         <div class="min-h-screen lg:pl-72">
             @include('layouts.navigation')
 
+            @php
+                $layoutUser = Auth::user();
+                $layoutUserName = $layoutUser?->isProtectedSuperAdmin() ? 'Super Admin' : $layoutUser?->name;
+                $layoutRole = $layoutUser?->isProtectedSuperAdmin()
+                    ? 'Super Administrator'
+                    : ucwords(str_replace('_', ' ', $layoutUser?->role ?? 'Staff'));
+            @endphp
+
+            @auth
+                <div class="app-topbar">
+                    <div class="app-topbar-inner">
+                        <div class="app-topbar-welcome">
+                            <span class="app-topbar-menu" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" d="M4 7h16M4 12h16M4 17h16" />
+                                </svg>
+                            </span>
+                            <p>Welcome back, <span>{{ $layoutUserName }}</span></p>
+                        </div>
+
+                        <div class="app-topbar-profile">
+                            <a href="{{ route('profile.edit') }}" class="app-topbar-avatar" aria-label="Open profile">
+                                @if ($layoutUser->isProtectedSuperAdmin())
+                                    <img src="{{ asset('images/logos/super-admin-badge.svg') }}" alt="Super Admin">
+                                @else
+                                    {{ collect(explode(' ', trim($layoutUser->name)))->filter()->map(fn ($part) => strtoupper(substr($part, 0, 1)))->take(2)->implode('') ?: 'U' }}
+                                @endif
+                            </a>
+                            <a href="{{ route('profile.edit') }}" class="app-topbar-user">
+                                <span>{{ $layoutUserName }}</span>
+                                <small>{{ $layoutRole }}</small>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            @endauth
+
             @isset($header)
                 <header class="border-b border-slate-200 bg-white/90 backdrop-blur">
                     <div class="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">

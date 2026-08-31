@@ -1,13 +1,14 @@
 @php
     $navItems = [
-        ['label' => 'Dashboard', 'route' => 'dashboard', 'active' => 'dashboard', 'accent' => 'bg-emerald-500', 'section' => 'Workspace'],
-        ['label' => 'Staff', 'route' => 'staff.index', 'active' => 'staff.*', 'accent' => 'bg-sky-500', 'section' => 'Workspace'],
+        ['label' => 'Dashboard', 'route' => 'dashboard', 'active' => 'dashboard', 'accent' => '#0f766e', 'icon' => 'dashboard', 'section' => 'Workspace'],
+        ['label' => 'Staff', 'route' => 'staff.index', 'active' => 'staff.*', 'accent' => '#2563eb', 'icon' => 'staff', 'section' => 'Workspace'],
         [
             'label' => 'Component 1.2',
             'caption' => 'Productive Partnership',
             'route' => 'productive-partnership.index',
             'active' => ['productive-partnership.*', 'farmer-organizations.*', 'selected-eois.*', 'reviewed-interviews.*', 'field-visits.*', 'approved-farmer-producer-groups.*', 'full-proposals.*', 'agreement-sign-fop.*'],
-            'accent' => 'bg-amber-500',
+            'accent' => '#d97706',
+            'icon' => 'partnership',
             'section' => 'IRDCRP modules',
             'children' => [
                 [
@@ -30,7 +31,8 @@
             'caption' => 'Youth and Women Entrepreneurs',
             'route' => 'youth-women.index',
             'active' => ['youth-women.*', 'business-information.*'],
-            'accent' => 'bg-violet-500',
+            'accent' => '#7c3aed',
+            'icon' => 'entrepreneurs',
             'section' => 'IRDCRP modules',
             'children' => [
                 [
@@ -63,15 +65,16 @@
             'caption' => 'Cascade and Tank Records',
             'route' => 'component-two.index',
             'active' => ['component-two.*', 'cascade-registration.*', 'tank-registration.*'],
-            'accent' => 'bg-cyan-500',
+            'accent' => '#0891b2',
+            'icon' => 'records',
             'section' => 'IRDCRP modules',
             'children' => [
                 ['label' => 'Cascade Registration', 'route' => 'cascade-registration.index', 'active' => 'cascade-registration.*'],
                 ['label' => 'Tank Registration', 'route' => 'tank-registration.index', 'active' => 'tank-registration.*'],
             ],
         ],
-        ['label' => 'Reports', 'route' => 'reports.index', 'active' => 'reports.*', 'accent' => 'bg-teal-500', 'section' => 'Management'],
-        ['label' => 'Settings', 'route' => 'settings.index', 'active' => 'settings.*', 'accent' => 'bg-slate-500', 'section' => 'Development'],
+        ['label' => 'Reports', 'route' => 'reports.index', 'active' => 'reports.*', 'accent' => '#059669', 'icon' => 'reports', 'section' => 'Management'],
+        ['label' => 'Settings', 'route' => 'settings.index', 'active' => 'settings.*', 'accent' => '#475569', 'icon' => 'settings', 'section' => 'Development'],
     ];
 @endphp
 
@@ -79,7 +82,9 @@
     <div class="sticky top-0 z-40 border-b border-slate-200 bg-white/95 shadow-sm backdrop-blur lg:hidden">
         <div class="flex h-16 items-center justify-between px-4">
             <a href="{{ route('dashboard') }}" class="flex items-center gap-3">
-                <span class="brand-mark h-10 w-10">IR</span>
+                <span class="brand-mark h-10 w-10">
+                    <img src="{{ asset('images/logos/irdcrp-logo.svg') }}" alt="" class="h-8 w-8 object-contain">
+                </span>
                 <span>
                     <span class="block text-sm font-semibold text-slate-950">IRDCRP MIS</span>
                     <span class="block text-xs text-slate-500">Operations</span>
@@ -96,8 +101,8 @@
     <div x-show="sidebarOpen" x-cloak class="fixed inset-0 z-50 lg:hidden">
         <div class="absolute inset-0 bg-slate-950/40" @click="sidebarOpen = false"></div>
         <aside class="sidebar-shell relative flex h-full w-72 flex-col shadow-2xl">
-            <div class="flex h-16 items-center justify-between border-b border-slate-200 px-4">
-                <span class="text-sm font-semibold text-slate-950">IRDCRP MIS</span>
+            <div class="flex h-16 items-center justify-between border-b border-white/10 px-4">
+                <span class="text-sm font-semibold text-white">Navigation</span>
                 <button type="button" @click="sidebarOpen = false" class="icon-button h-9 w-9">
                     <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" d="M6 6l12 12M18 6L6 18" />

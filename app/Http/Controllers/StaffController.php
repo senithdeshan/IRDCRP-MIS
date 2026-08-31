@@ -48,7 +48,7 @@ class StaffController extends Controller
     public function create(): View
     {
         return view('staff.create', [
-            'roles' => self::ROLES,
+            'roles' => $this->assignableRoles(),
             'permissions' => self::PERMISSIONS,
         ]);
     }
@@ -65,17 +65,31 @@ class StaffController extends Controller
 
     public function edit(User $staff): View
     {
+        abort_if($staff->isProtectedSuperAdmin() && ! request()->user()->is($staff), 403);
+
         return view('staff.edit', [
             'staffMember' => $staff,
-            'roles' => self::ROLES,
+            'roles' => $staff->isProtectedSuperAdmin() ? ['super_admin' => self::ROLES['super_admin']] : $this->assignableRoles(),
             'permissions' => self::PERMISSIONS,
         ]);
     }
 
     public function update(Request $request, User $staff): RedirectResponse
     {
+        abort_if($staff->isProtectedSuperAdmin() && ! $request->user()->is($staff), 403);
+
         $data = $this->validated($request, $staff);
         $data['permissions'] = $request->input('permissions', []);
+
+        if ($staff->isProtectedSuperAdmin()) {
+            if ($data['email'] !== $staff->email || $data['role'] !== 'super_admin' || $data['status'] !== 'active') {
+                return back()->withErrors([
+                    'role' => 'Protected Super Admin cannot be downgraded, deactivated, or transferred.',
+                ])->withInput();
+            }
+
+            $data['permissions'] = array_keys(self::PERMISSIONS);
+        }
 
         if ($request->user()->is($staff) && $data['status'] !== 'active') {
             return back()->withErrors(['status' => 'You cannot deactivate your own account.'])->withInput();
@@ -97,11 +111,16 @@ class StaffController extends Controller
             'email' => ['required', 'email', 'max:255', Rule::unique('users')->ignore($staff)],
             'designation' => ['nullable', 'string', 'max:255'],
             'phone' => ['nullable', 'string', 'max:30'],
-            'role' => ['required', Rule::in(array_keys(self::ROLES))],
+            'role' => ['required', Rule::in(array_keys($staff?->isProtectedSuperAdmin() ? self::ROLES : $this->assignableRoles()))],
             'status' => ['required', Rule::in(['active', 'inactive'])],
             'permissions' => ['array'],
             'permissions.*' => [Rule::in(array_keys(self::PERMISSIONS))],
             'password' => [$staff ? 'nullable' : 'required', 'confirmed', 'min:8'],
         ]);
+    }
+
+    private function assignableRoles(): array
+    {
+        return array_diff_key(self::ROLES, ['super_admin' => true]);
     }
 }

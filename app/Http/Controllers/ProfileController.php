@@ -26,6 +26,12 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
+        if ($request->user()->isProtectedSuperAdmin() && $request->validated('email') !== $request->user()->email) {
+            return back()->withErrors([
+                'email' => 'Protected Super Admin email cannot be changed.',
+            ])->withInput();
+        }
+
         $request->user()->fill($request->validated());
 
         if ($request->user()->isDirty('email')) {
@@ -42,6 +48,12 @@ class ProfileController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
+        if ($request->user()->isProtectedSuperAdmin()) {
+            return back()->withErrors([
+                'password' => 'Protected Super Admin account cannot be deleted.',
+            ], 'userDeletion');
+        }
+
         $request->validateWithBag('userDeletion', [
             'password' => ['required', 'current_password'],
         ]);

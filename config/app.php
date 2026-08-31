@@ -15,6 +15,8 @@ return [
 
     'name' => env('APP_NAME', 'Laravel'),
 
+    'protected_super_admin_email' => env('PROTECTED_SUPER_ADMIN_EMAIL', 'admin@irdcrp.lk'),
+
     /*
     |--------------------------------------------------------------------------
     | Application Environment

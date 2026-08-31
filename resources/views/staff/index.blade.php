@@ -56,7 +56,16 @@
                                             <div class="mt-1 text-xs font-medium text-slate-400">{{ $member->designation }}</div>
                                         @endif
                                     </td>
-                                    <td class="px-5 py-4 text-sm text-slate-700">{{ $roles[$member->role] ?? ucfirst($member->role ?? 'Staff') }}</td>
+                                    <td class="px-5 py-4 text-sm text-slate-700">
+                                        @if ($member->isProtectedSuperAdmin())
+                                            <span class="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-bold text-amber-900">
+                                                <img src="{{ asset('images/logos/super-admin-badge.svg') }}" alt="" class="h-5 w-5 object-contain">
+                                                Super Admin
+                                            </span>
+                                        @else
+                                            {{ $roles[$member->role] ?? ucfirst($member->role ?? 'Staff') }}
+                                        @endif
+                                    </td>
                                     <td class="px-5 py-4">
                                         <span @class([
                                             'rounded-full px-3 py-1 text-xs font-semibold',
@@ -68,7 +77,11 @@
                                     </td>
                                     <td class="px-5 py-4 text-sm text-slate-600">{{ count($member->permissions ?? []) }} enabled</td>
                                     <td class="px-5 py-4 text-right">
-                                        <a href="{{ route('staff.edit', $member) }}" class="rounded-md border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">Edit</a>
+                                        @if ($member->isProtectedSuperAdmin() && ! auth()->user()->is($member))
+                                            <span class="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-800">Locked</span>
+                                        @else
+                                            <a href="{{ route('staff.edit', $member) }}" class="rounded-md border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">Edit</a>
+                                        @endif
                                     </td>
                                 </tr>
                             @empty

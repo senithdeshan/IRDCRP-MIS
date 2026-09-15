@@ -82,6 +82,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/component-1-2/selected-for-full-proposal-preparation', [ProductivePartnershipEoiController::class, 'fullProposals'])->name('full-proposals.index');
     Route::patch('/component-1-2/selected-for-full-proposal-preparation/{eoi}/status', [ProductivePartnershipEoiController::class, 'updateFullProposalStatus'])->name('full-proposals.status');
     Route::get('/component-1-2/agreement-sign-fop', [ProductivePartnershipEoiController::class, 'agreementSignFop'])->name('agreement-sign-fop.index');
+    Route::patch('/component-1-2/agreement-sign-fop/{eoi}/data', [ProductivePartnershipEoiController::class, 'updateAgreementEoiData'])->name('agreement-sign-fop.data');
+    Route::get('/component-1-2/agreement-sign-fop/{eoi}/documents/{document}', [ProductivePartnershipEoiController::class, 'downloadAgreementDocument'])->name('agreement-sign-fop.document');
 
     Route::get('/component-1-3/youth-women-entrepreneurs', [YouthWomenApplicantController::class, 'overview'])->name('youth-women.index');
 

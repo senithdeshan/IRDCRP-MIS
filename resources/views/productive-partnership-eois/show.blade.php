@@ -7,6 +7,7 @@
                 <p class="mt-1 text-sm text-slate-500">{{ $eoi->organization_name ?: 'EOI full record' }}</p>
             </div>
             <div class="flex flex-wrap gap-2">
+                <button type="button" x-data @click="$dispatch('open-modal', 'eoi-data-view-{{ $eoi->id }}')" class="rounded-md bg-emerald-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-800">EOI Data View Details</button>
                 <a href="{{ route('selected-eois.index') }}" class="rounded-md border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">Back</a>
                 <form method="POST" action="{{ route('selected-eois.destroy', $eoi) }}" data-confirm-title="Delete this EOI record?" data-confirm-message="This action cannot be undone." data-confirm-action="Delete" data-confirm-tone="rose">
                     @csrf
@@ -309,5 +310,6 @@
                 </div>
             </div>
         </div>
+        @include('productive-partnership-eois.partials.agreement-eoi-data-view')
     </section>
 </x-app-layout>

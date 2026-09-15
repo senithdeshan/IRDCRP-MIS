@@ -76,6 +76,8 @@
                                         @endif
                                     </td>
                                     <td class="px-5 py-4 text-right">
+                                        <button type="button" x-data @click="$dispatch('open-modal', 'eoi-data-{{ $eoi->id }}')" class="mb-3 inline-flex rounded-md bg-emerald-700 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-emerald-800">Add EOI Data</button>
+                                        <div></div>
                                         <a href="{{ route('selected-eois.show', $eoi) }}" class="rounded-md border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50">View Previous Details</a>
                                     </td>
                                 </tr>
@@ -91,6 +93,9 @@
                     {{ $eois->links() }}
                 </div>
             </div>
+            @foreach ($eois as $eoi)
+                @include('productive-partnership-eois.partials.agreement-eoi-data')
+            @endforeach
         </div>
     </section>
 </x-app-layout>

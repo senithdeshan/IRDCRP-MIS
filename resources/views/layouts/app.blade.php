@@ -142,5 +142,6 @@
             })();
         </script>
         @stack('scripts')
+        @include('layouts.partials.alpine-fallback')
     </body>
 </html>

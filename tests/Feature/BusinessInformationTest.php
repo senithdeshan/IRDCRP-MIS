@@ -12,6 +12,23 @@ class BusinessInformationTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_individual_sidebar_destinations_are_authenticated_and_use_individual_pages(): void
+    {
+        $routes = ['individual-eois.index', 'individual-workflow.reviewed-interviews', 'individual-workflow.field-visits', 'individual-workflow.approved', 'individual-workflow.full-proposals', 'individual-workflow.agreements'];
+        foreach ($routes as $route) {
+            $this->get(route($route))->assertRedirect(route('login'));
+        }
+        $this->actingAs(User::factory()->create());
+        $this->get(route('individual-eois.index'))->assertOk()
+            ->assertViewIs('business-information.index')
+            ->assertSee('Received All EOI')
+            ->assertSee('action="'.route('individual-eois.index').'"', false);
+        foreach (array_slice($routes, 1) as $route) {
+            $this->get(route($route))->assertOk()->assertViewIs('youth-women.workflow')
+                ->assertDontSee('Coming soon')->assertSee('Add Individual Applicant');
+        }
+    }
+
     public function test_business_information_page_can_be_rendered(): void
     {
         $user = User::factory()->create();

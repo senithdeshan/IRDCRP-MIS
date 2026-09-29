@@ -47,7 +47,91 @@ class ProductivePartnershipEoiController extends Controller
         '_validation_status',
         '_notes',
         '_status',
+        'GN Division',
+        'ASC',
     ];
+
+    public function create(): View
+    {
+        $locationColumns = ['province', 'district', 'ds_division', 'gn_division', 'as_centre'];
+        $locationRecords = DB::table('productive_partnership_eois')->select($locationColumns)
+            ->whereNotNull('province')->whereNotNull('district')->whereNotNull('ds_division')
+            ->union(DB::table('tank_registrations')->select($locationColumns)
+                ->whereNotNull('province')->whereNotNull('district')->whereNotNull('ds_division'))
+            ->get();
+
+        return view('productive-partnership-eois.create', [
+            'administrativeDivisions' => config('admin_divisions.provinces', []),
+            'sectors' => YouthWomenApplicantController::BUSINESS_SECTORS,
+            'locationRecords' => $locationRecords,
+        ]);
+    }
+
+    public function store(Request $request): RedirectResponse
+    {
+        ProductivePartnershipEoi::create($this->validatedSingleEntry($request));
+
+        return redirect()->route('selected-eois.index')->with('status', 'EOI record added successfully.');
+    }
+
+    protected function validatedSingleEntry(Request $request, ?ProductivePartnershipEoi $eoi = null): array
+    {
+        $divisions = config('admin_divisions.provinces', []);
+        $province = $request->input('province');
+        $district = $request->input('district');
+        $districts = is_string($province) ? ($divisions[$province] ?? []) : [];
+        $dsDivisions = is_string($district) ? ($districts[$district] ?? []) : [];
+        $rules = [];
+        foreach (['organization_name', 'legal_status', 'contact_person_name', 'contact_person_designation', 'business_proposal_title'] as $field) {
+            $rules[$field] = ['required', 'string', 'max:255'];
+        }
+        foreach (['place_of_registration', 'registration_number', 'completeness_mandatory_requirement', 'initial_desk_review_status'] as $field) {
+            $rules[$field] = ['nullable', 'string', 'max:255'];
+        }
+        $data = $request->validate(array_merge($rules, [
+            'eoi_number' => [
+                'bail', 'required', 'string', 'max:255',
+                ...($eoi && $request->input('eoi_number') === $eoi->eoi_number ? [] : ['regex:~\AEOI/PP/(?:19[0-9]{2}|[2-9][0-9]{3})/[1-9][0-9]{0,4}/[0-9]+\z~']),
+                function ($attribute, $value, $fail) {
+                    if (ProductivePartnershipEoi::parseEoiNumber($value)['call_number'] > 65535) {
+                        $fail('The call number in the EOI number must be between 1 and 65535.');
+                    }
+                },
+                Rule::unique('productive_partnership_eois', 'eoi_number')->ignore($eoi),
+            ],
+            'number_of_members' => ['required', 'integer', 'between:1,4294967295'],
+            'registration_date' => ['nullable', 'date_format:Y-m-d', 'before_or_equal:today'],
+            'contact_person_telephone' => ['required', 'string', 'max:30', 'regex:/^\+?[0-9 ()-]{7,30}$/', 'regex:/^(?:\D*\d){7,15}\D*$/'],
+            'contact_person_email' => ['required', 'email', 'max:255'],
+            'organization_registered_address' => ['required', 'string', 'max:5000'],
+            'proposed_business_location_address' => ['required', 'string', 'max:5000'],
+            'province' => ['required', 'string', Rule::in(array_keys($divisions))],
+            'district' => ['required', 'string', Rule::in(array_keys($districts))],
+            'ds_division' => ['required', 'string', Rule::in($dsDivisions)],
+            'gn_division' => ['nullable', 'string', 'max:255'],
+            'as_centre' => ['nullable', 'string', 'max:255'],
+            'sector' => ['required', 'string', Rule::in(YouthWomenApplicantController::BUSINESS_SECTORS)],
+            'proposed_total_investment' => ['required', 'numeric', 'decimal:0,2', 'gt:0', 'max:9999999999999.99'],
+            'expected_grant_irdcrp' => ['required', 'numeric', 'decimal:0,2', 'min:0', 'max:9999999999999.99', 'lte:proposed_total_investment'],
+            'initial_screening_date' => ['nullable', 'date_format:Y-m-d', 'before_or_equal:today'],
+            'notes' => ['nullable', 'string', 'max:5000'],
+            'kobo_id' => ['nullable', 'string', 'max:255'],
+            'kobo_uuid' => ['nullable', 'uuid'],
+            'submission_time' => ['nullable', 'date_format:Y-m-d\TH:i', 'before_or_equal:now'],
+            'validation_status' => ['nullable', 'string', 'max:255'],
+            'status' => ['nullable', 'string', 'max:255'],
+        ]), [
+            'district.in' => 'Choose a district belonging to the selected province.',
+            'ds_division.in' => 'Choose a DS division belonging to the selected district.',
+            'sector.in' => 'Choose a valid sector from the list.',
+            'contact_person_telephone.regex' => 'Enter a valid telephone number with 7–15 digits, optionally using +, spaces, parentheses or hyphens.',
+            'expected_grant_irdcrp.lte' => 'The expected grant cannot exceed the proposed total investment.',
+            'eoi_number.unique' => 'This EOI number already exists. Enter a unique EOI number.',
+            'eoi_number.regex' => 'Use EOI/PP/YYYY/CALL/NUMBER, for example EOI/PP/2026/1/131. The call number must be greater than zero.',
+        ]);
+
+        return $data;
+    }
 
     public function index(Request $request): View
     {
@@ -486,10 +570,34 @@ class ProductivePartnershipEoiController extends Controller
         ]);
     }
 
+    protected function importExtensions(): array
+    {
+        return ['xlsx'];
+    }
+
+    protected function prepareImportedPayload(array $payload, ?ProductivePartnershipEoi $existing): array
+    {
+        return $payload;
+    }
+
+    private function readImportCsv(string $path): array
+    {
+        $rows = [];
+        $handle = fopen($path, 'r');
+        while (($row = fgetcsv($handle)) !== false) {
+            if ($rows === [] && isset($row[0])) {
+                $row[0] = preg_replace('/^\xEF\xBB\xBF/', '', $row[0]);
+            }
+            $rows[] = $row;
+        }
+        fclose($handle);
+        return $rows;
+    }
+
     public function import(Request $request): RedirectResponse
     {
         $request->validate([
-            'eoi_file' => ['required', 'file', 'mimes:xlsx', 'max:15360'],
+            'eoi_file' => ['required', 'file', 'mimes:'.implode(',', $this->importExtensions()), 'max:15360'],
         ]);
 
         $file = $request->file('eoi_file');
@@ -497,6 +605,7 @@ class ProductivePartnershipEoiController extends Controller
 
         $rows = match ($extension) {
             'xlsx' => $this->readXlsx($file->getRealPath()),
+            'csv', 'txt' => in_array($extension, $this->importExtensions(), true) ? $this->readImportCsv($file->getRealPath()) : throw ValidationException::withMessages(['eoi_file' => 'Please upload a .xlsx Excel file.']),
             default => throw ValidationException::withMessages([
                 'eoi_file' => 'Please upload a .xlsx Excel file.',
             ]),
@@ -517,6 +626,7 @@ class ProductivePartnershipEoiController extends Controller
 
             $payload['imported_at'] = now();
             $existing = ProductivePartnershipEoi::where('eoi_number', $payload['eoi_number'])->first();
+            $payload = $this->prepareImportedPayload($payload, $existing);
             ProductivePartnershipEoi::updateOrCreate(['eoi_number' => $payload['eoi_number']], $payload);
             $existing ? $updated++ : $imported++;
         }
@@ -598,6 +708,8 @@ class ProductivePartnershipEoiController extends Controller
                 $eoi->validation_status,
                 $eoi->notes,
                 $eoi->status,
+                $eoi->gn_division,
+                $eoi->as_centre,
                 $eoi->initial_stage ? 'Yes' : 'No',
             ];
         }
@@ -777,7 +889,9 @@ class ProductivePartnershipEoiController extends Controller
             str_contains($normalized, 'proposedbusinesslocationaddress') => 'proposed_business_location_address',
             str_contains($normalized, 'province') => 'province',
             str_contains($normalized, 'district') && ! str_contains($normalized, 'secretariat') => 'district',
-            str_contains($normalized, 'divisional_secretariat_ds_division') || str_contains($normalized, 'dsdivision') || str_contains($normalized, 'secretariat') => 'ds_division',
+            str_contains($normalized, 'gndivision') || $normalized === 'gnd' => 'gn_division',
+            str_contains($normalized, 'ascentre') || str_contains($normalized, 'agrarianservice') || $normalized === 'asc' => 'as_centre',
+            str_contains($normalized, 'divisional_secretariat_ds_division') || str_contains($normalized, 'dsdivision') || str_contains($normalized, 'secretariat') || $normalized === 'dsd' => 'ds_division',
             str_contains($normalized, 'titleofthebusinessproposal') || str_contains($normalized, 'businessproposaltitle') => 'business_proposal_title',
             str_contains($normalized, 'sector') => 'sector',
             str_contains($normalized, 'proposedtotalinvestment') => 'proposed_total_investment',
@@ -996,7 +1110,7 @@ class ProductivePartnershipEoiController extends Controller
 </Relationships>');
         $zip->addFromString('xl/workbook.xml', '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
-<sheets><sheet name="Selected All EOI" sheetId="1" r:id="rId1"/></sheets>
+<sheets><sheet name="Received All EOI" sheetId="1" r:id="rId1"/></sheets>
 </workbook>');
         $zip->addFromString('xl/styles.xml', '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">

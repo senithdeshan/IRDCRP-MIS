@@ -14,17 +14,36 @@ class ProductivePartnershipEoiTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_selected_all_eoi_page_can_be_rendered(): void
+    public function test_received_all_eoi_page_can_be_rendered(): void
     {
         $user = User::factory()->create();
 
         $response = $this->actingAs($user)->get(route('selected-eois.index'));
 
         $response->assertOk();
-        $response->assertSee('Selected All EOI');
+        $response->assertSee('Received All EOI');
+        $response->assertSee(route('selected-eois.create'));
         $response->assertSee('All Provinces');
         $response->assertSee('Western');
         $response->assertSee('Sabaragamuwa');
+    }
+
+    public function test_add_eoi_page_provides_template_and_bulk_upload(): void
+    {
+        $this->get(route('selected-eois.create'))->assertRedirect(route('login'));
+
+        $this->actingAs(User::factory()->create())
+            ->get(route('selected-eois.create'))
+            ->assertOk()
+            ->assertSee('Download Template')
+            ->assertSee('Bulk Upload')
+            ->assertSee(route('selected-eois.template'))
+            ->assertSee(route('selected-eois.import'));
+
+        $this->from(route('selected-eois.create'))
+            ->post(route('selected-eois.import'), [])
+            ->assertRedirect(route('selected-eois.create'))
+            ->assertSessionHasErrors('eoi_file');
     }
 
     public function test_eois_can_be_imported_and_moved_to_field_visit(): void

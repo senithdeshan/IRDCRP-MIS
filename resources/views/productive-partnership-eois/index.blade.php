@@ -1,10 +1,13 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-            <div>
+        <div class="space-y-3">
+            <div class="flex items-center justify-between gap-4">
+                <a href="{{ route('selected-eois.create') }}" class="shrink-0 rounded-md bg-emerald-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-800">Add EOI</a>
+                <div class="min-w-0 text-right">
                 <p class="text-xs font-semibold uppercase tracking-[0.22em] text-emerald-700">Component 1.2</p>
-                <h1 class="text-2xl font-semibold text-slate-950">Selected All EOI</h1>
+                <h1 class="text-2xl font-semibold text-slate-950">Received All EOI</h1>
                 <p class="mt-1 text-sm text-slate-500">Productive Partnership EOI registry, screening, and initial stage movement.</p>
+                </div>
             </div>
             <div class="flex flex-wrap gap-2">
                 <a href="{{ route('selected-eois.template') }}" class="rounded-md border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">Generate Sheet</a>

@@ -18,7 +18,13 @@
         </div>
     </div>
 
-    <nav class="sidebar-nav">
+    @php
+        $expandedComponent = collect($navItems)->first(fn ($item) => ! empty($item['children']) && request()->routeIs(...(array) $item['active']))['route'] ?? null;
+        if ($expandedComponent === null && request()->routeIs('dashboard')) {
+            $expandedComponent = 'productive-partnership.index';
+        }
+    @endphp
+    <nav class="sidebar-nav" x-data="{ expandedComponent: @js($expandedComponent) }">
         @foreach (collect($navItems)->groupBy('section') as $section => $items)
             <div class="sidebar-section">
                 <p class="sidebar-section-label">{{ $section }}</p>
@@ -32,12 +38,14 @@
                             $itemIcon = $item['icon'] ?? 'circle';
                         @endphp
 
-                        <div>
+                        <div x-id="['component-menu']">
+                            <div class="relative">
                             <a
                                 href="{{ route($item['route'], $item['params'] ?? []) }}"
                                 @class([
                                     'nav-link',
                                     'nav-link-active' => $isActive,
+                                    'sidebar-component-link' => ! empty($item['children']),
                                 ])
                                 style="--nav-accent: {{ $item['accent'] }}"
                             >
@@ -97,17 +105,20 @@
                                         <span class="nav-link-caption">{{ $item['caption'] }}</span>
                                     @endisset
                                 </span>
+                            </a>
                                 @if (! empty($item['children']))
-                                    <span class="nav-chevron" aria-hidden="true">
+                                    <button type="button" @click="expandedComponent = expandedComponent === @js($item['route']) ? null : @js($item['route'])" :aria-expanded="expandedComponent === @js($item['route'])" :aria-controls="$id('component-menu')" :aria-label="(expandedComponent === @js($item['route']) ? 'Collapse ' : 'Expand ') + @js($item['label'])" class="sidebar-component-toggle {{ $isActive ? 'text-emerald-900' : 'text-emerald-100' }}">
+                                        <span class="nav-chevron transition-transform duration-150" :class="{ 'rotate-90': expandedComponent === @js($item['route']) }" aria-hidden="true">
                                         <svg viewBox="0 0 20 20" fill="currentColor">
                                             <path fill-rule="evenodd" d="M7.22 4.72a.75.75 0 0 1 1.06 0l4.75 4.75a.75.75 0 0 1 0 1.06l-4.75 4.75a.75.75 0 0 1-1.06-1.06L11.44 10 7.22 5.78a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
                                         </svg>
-                                    </span>
+                                        </span>
+                                    </button>
                                 @endif
-                            </a>
+                            </div>
 
                             @if (! empty($item['children']))
-                                <div class="sub-nav-group">
+                                <div class="sub-nav-group" :id="$id('component-menu')" x-show="expandedComponent === @js($item['route'])" x-cloak>
                                     @foreach ($item['children'] as $child)
                                         @php
                                             $childActivePatterns = (array) $child['active'];

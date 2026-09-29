@@ -1,15 +1,14 @@
 <x-app-layout>
-    @php($recordsRoute = request()->routeIs('individual-eois.*') ? 'individual-eois.index' : 'business-information.index')
     <x-slot name="header">
         <div class="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
             <div>
-                <p class="text-xs font-semibold uppercase tracking-[0.22em] text-emerald-700">Component 1.3</p>
-                <h1 class="text-2xl font-semibold text-slate-950">{{ $recordsRoute === 'individual-eois.index' ? 'Received All EOI' : 'Business Information' }}</h1>
-                <p class="mt-1 text-sm text-slate-500">Applicant Data of Youth and Women Entrepreneurs.</p>
+                <p class="text-xs font-semibold uppercase tracking-[0.22em] text-emerald-700">Component 1.2</p>
+                <h1 class="text-2xl font-semibold text-slate-950">Farmer Group Information</h1>
+                <p class="mt-1 text-sm text-slate-500">Farmer group records, business proposals, and initial screening.</p>
             </div>
             <div class="flex flex-wrap gap-2">
-                <a href="{{ route('business-information.template') }}" class="rounded-md border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">Download Template</a>
-                <a href="{{ route('business-information.create') }}" class="rounded-md bg-slate-950 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800">Add Applicant</a>
+                <a href="{{ route('farmer-organizations.template') }}" class="rounded-md border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">Download Template</a>
+                <a href="{{ route('farmer-organizations.create') }}" class="rounded-md bg-slate-950 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800">Add Farmer Group</a>
             </div>
         </div>
     </x-slot>
@@ -24,7 +23,7 @@
 
             <div class="grid gap-4 md:grid-cols-4">
                 <div class="metric-tile p-5">
-                    <p class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Applicants</p>
+                    <p class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Farmer Groups</p>
                     <p class="mt-3 text-3xl font-semibold text-slate-950">{{ number_format($summary['total']) }}</p>
                 </div>
                 <div class="metric-tile p-5">
@@ -44,21 +43,21 @@
             <div class="grid gap-5 xl:grid-cols-[0.8fr_1.2fr]">
                 <div class="panel-surface p-5">
                     <h2 class="text-base font-semibold text-slate-950">Bulk Upload</h2>
-                    <p class="mt-1 text-sm text-slate-500">Upload Kobo exported `.xlsx` or prepared CSV. Existing EOI numbers will be updated.</p>
+                    <p class="mt-1 text-sm text-slate-500">Upload the completed Excel template or a CSV with the same columns. Existing EOI numbers will be updated.</p>
 
-                    <form method="POST" action="{{ route('business-information.import') }}" enctype="multipart/form-data" class="mt-5 space-y-4">
+                    <form method="POST" action="{{ route('farmer-organizations.import') }}" enctype="multipart/form-data" class="mt-5 space-y-4">
                         @csrf
-                        <input type="file" name="applicant_file" accept=".xlsx,.csv,.txt" class="block w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 file:mr-4 file:rounded-md file:border-0 file:bg-slate-950 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-white">
-                        <x-input-error class="mt-2" :messages="$errors->get('applicant_file')" />
-                        <button type="submit" class="w-full rounded-md bg-emerald-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-800">Import Applicants</button>
+                        <input type="file" name="eoi_file" accept=".xlsx,.csv,.txt" required aria-label="Farmer group import file" class="block w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 file:mr-4 file:rounded-md file:border-0 file:bg-slate-950 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-white">
+                        <x-input-error class="mt-2" :messages="$errors->get('eoi_file')" />
+                        <button type="submit" class="w-full rounded-md bg-emerald-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-800">Import Farmer Groups</button>
                     </form>
                 </div>
 
                 <div class="grid gap-4 sm:grid-cols-3">
                     <div class="panel-surface p-5">
-                        <h3 class="text-sm font-semibold text-slate-950">Gender</h3>
+                        <h3 class="text-sm font-semibold text-slate-950">Legal Status</h3>
                         <div class="mt-4 space-y-2">
-                            @foreach ($genderCounts as $label => $count)
+                            @foreach ($legalStatusCounts as $label => $count)
                                 <div class="flex items-center justify-between text-sm">
                                     <span class="text-slate-600">{{ $label ?: 'Unknown' }}</span>
                                     <span class="font-semibold text-slate-950">{{ $count }}</span>
@@ -91,12 +90,12 @@
                 </div>
             </div>
 
-            <form method="GET" action="{{ route($recordsRoute) }}" class="panel-surface grid gap-3 p-4 md:grid-cols-[1.4fr_0.7fr_0.8fr_0.8fr_0.8fr_auto]" x-data="adminDivisionPicker(@js($administrativeDivisions), @js(request('province')), @js(request('district')), '')">
-                <input name="search" value="{{ request('search') }}" placeholder="Search EOI, applicant, NIC, phone, business" class="rounded-md border-slate-300 text-sm shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
-                <select name="gender" class="rounded-md border-slate-300 text-sm shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
-                    <option value="">All genders</option>
-                    @foreach (['Male', 'Female'] as $gender)
-                        <option value="{{ $gender }}" @selected(request('gender') === $gender)>{{ $gender }}</option>
+            <form method="GET" action="{{ route('farmer-organizations.records') }}" class="panel-surface grid gap-3 p-4 md:grid-cols-[1.4fr_0.7fr_0.8fr_0.8fr_0.8fr_auto]" x-data="adminDivisionPicker(@js($administrativeDivisions), @js(request('province')), @js(request('district')), '')">
+                <input name="search" value="{{ request('search') }}" placeholder="Search EOI, group, registration, contact, proposal" class="rounded-md border-slate-300 text-sm shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
+                <select name="legal_status" class="rounded-md border-slate-300 text-sm shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
+                    <option value="">All legal statuses</option>
+                    @foreach ($legalStatusCounts->keys()->filter() as $legalStatus)
+                        <option value="{{ $legalStatus }}" @selected(request('legal_status') === $legalStatus)>{{ $legalStatus }}</option>
                     @endforeach
                 </select>
                 <select name="province" x-model="province" @change="district = ''" class="rounded-md border-slate-300 text-sm shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
@@ -125,7 +124,7 @@
                     <table class="min-w-full divide-y divide-slate-200">
                         <thead class="bg-slate-50">
                             <tr>
-                                <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Applicant</th>
+                                <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Farmer Group</th>
                                 <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Business</th>
                                 <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Location</th>
                                 <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Investment</th>
@@ -137,12 +136,12 @@
                             @forelse ($applicants as $applicant)
                                 <tr>
                                     <td class="px-5 py-4">
-                                        <div class="font-semibold text-slate-950">{{ $applicant->applicant_name }}</div>
+                                        <div class="font-semibold text-slate-950">{{ $applicant->organization_name }}</div>
                                         <div class="text-sm text-slate-500">{{ $applicant->eoi_number }}</div>
-                                        <div class="mt-1 text-xs text-slate-400">{{ $applicant->nic }} / {{ $applicant->telephone }}</div>
+                                        <div class="mt-1 text-xs text-slate-400">{{ $applicant->registration_number }} / {{ $applicant->contact_person_telephone }}</div>
                                     </td>
                                     <td class="px-5 py-4">
-                                        <div class="font-semibold text-slate-800">{{ $applicant->business_name }}</div>
+                                        <div class="font-semibold text-slate-800">{{ $applicant->business_proposal_title }}</div>
                                         <div class="text-sm text-slate-500">{{ $applicant->legal_status }}</div>
                                     </td>
                                     <td class="px-5 py-4 text-sm text-slate-600">
@@ -153,24 +152,20 @@
                                     <td class="px-5 py-4">
                                         <span @class([
                                             'rounded-full px-3 py-1 text-xs font-semibold',
-                                            'bg-emerald-100 text-emerald-800' => $applicant->initial_screening_result === 'Selected',
-                                            'bg-rose-100 text-rose-800' => $applicant->initial_screening_result === 'Reject',
-                                            'bg-slate-100 text-slate-700' => ! in_array($applicant->initial_screening_result, ['Selected', 'Reject'], true),
+                                            'bg-emerald-100 text-emerald-800' => $applicant->farmer_screening_result === 'Selected',
+                                            'bg-rose-100 text-rose-800' => $applicant->farmer_screening_result === 'Reject',
+                                            'bg-slate-100 text-slate-700' => ! in_array($applicant->farmer_screening_result, ['Selected', 'Reject'], true),
                                         ])>
-                                            {{ $applicant->initial_screening_result ?: 'Pending' }}
+                                            {{ $applicant->farmer_screening_result ?: 'Pending' }}
                                         </span>
                                     </td>
                                     <td class="px-5 py-4 text-right">
-                                        <a href="{{ route('business-information.edit', $applicant) }}" class="rounded-md border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">Edit</a>
-                                        @if ($applicant->initial_screening_result === 'Selected')
-                                            @php($workflowPage = match ($applicant->current_workflow_stage) { 'interview' => 'reviewed-interviews', 'verification' => 'field-visits', 'approved' => 'approved', 'proposal' => 'full-proposals', default => 'agreements' })
-                                            <a href="{{ route('individual-workflow.'.$workflowPage, ['search' => $applicant->eoi_number]) }}" class="mt-3 block text-xs font-semibold text-emerald-700">{{ $applicant->current_workflow_stage === 'completed' ? 'View signed agreement' : 'Continue workflow' }}</a>
-                                        @endif
+                                        <a href="{{ route('farmer-organizations.edit', $applicant) }}" class="rounded-md border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">Edit</a>
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="6" class="px-5 py-10 text-center text-sm text-slate-500">No applicant records yet. Upload your Kobo Excel export to start.</td>
+                                    <td colspan="6" class="px-5 py-10 text-center text-sm text-slate-500">No farmer group records yet. Upload your Kobo Excel export to start.</td>
                                 </tr>
                             @endforelse
                         </tbody>

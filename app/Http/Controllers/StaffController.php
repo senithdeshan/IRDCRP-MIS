@@ -24,7 +24,7 @@ class StaffController extends Controller
         'staff.manage' => 'Staff Management',
         'productive_partnership.view' => 'Component 1.2 Productive Partnership',
         'farmer_organizations.view' => 'Farmer Organization Information',
-        'selected_eois.view' => 'Selected All EOI',
+        'selected_eois.view' => 'Received All EOI',
         'field_visits.view' => 'Selected For Verification Field Visit Pass',
         'full_proposals.view' => 'Selected for Full Proposal Preparation',
         'agreement_sign_fop.view' => 'Agreement Sign FOP',

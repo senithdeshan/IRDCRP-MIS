@@ -3,7 +3,7 @@
         <div class="flex flex-col gap-1">
             <p class="text-xs font-semibold uppercase tracking-[0.22em] text-emerald-700">Component 1.2</p>
             <h1 class="text-2xl font-semibold text-slate-950">Selected for Reviewed Interview</h1>
-            <p class="text-sm text-slate-500">Records marked `Yes` in Selected All EOI appear here for interview review.</p>
+            <p class="text-sm text-slate-500">Records marked `Yes` in Received All EOI appear here for interview review.</p>
         </div>
     </x-slot>
 

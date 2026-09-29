@@ -43,6 +43,27 @@ class YouthWomenApplicant extends Model
             'business_sectors' => 'array',
             'proposed_total_investment' => 'decimal:2',
             'imported_at' => 'datetime',
+            'workflow_data' => 'array',
+            'agreement_eoi_data' => 'array',
+            'workflow_history' => 'array',
         ];
+    }
+
+    public function getCurrentWorkflowStageAttribute(): string
+    {
+        return $this->initial_screening_result === 'Selected' ? ($this->workflow_stage ?? 'interview') : 'received';
+    }
+
+    protected static function booted(): void
+    {
+        static::saving(function (self $applicant) {
+            if ($applicant->exists && $applicant->isDirty('initial_screening_result') && $applicant->initial_screening_result !== 'Selected') {
+                $history = $applicant->workflow_history ?? [];
+                $history[] = ['from' => $applicant->workflow_stage ?? 'interview', 'to' => 'received', 'action' => 'Screening changed; workflow reset', 'data' => $applicant->workflow_data, 'by' => auth()->id(), 'at' => now()->toIso8601String()];
+                $applicant->workflow_stage = null;
+                $applicant->workflow_data = null;
+                $applicant->workflow_history = $history;
+            }
+        });
     }
 }

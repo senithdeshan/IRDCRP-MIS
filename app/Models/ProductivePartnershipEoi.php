@@ -49,6 +49,8 @@ class ProductivePartnershipEoi extends Model
         'province',
         'district',
         'ds_division',
+        'gn_division',
+        'as_centre',
         'business_proposal_title',
         'sector',
         'proposed_total_investment',
@@ -119,6 +121,11 @@ class ProductivePartnershipEoi extends Model
             'eoi_year' => 'integer',
             'eoi_call_number' => 'integer',
         ];
+    }
+
+    public function getFarmerScreeningResultAttribute(): string
+    {
+        return $this->initial_stage ? 'Selected' : (in_array($this->initial_desk_review_status, ['Reject', 'Rejected'], true) ? 'Reject' : 'Pending');
     }
 
     public function getInterviewStatusLabelAttribute(): ?string
@@ -193,8 +200,12 @@ class ProductivePartnershipEoi extends Model
 
             $parts = self::parseEoiNumber($eoi->eoi_number);
 
-            $eoi->eoi_year = $parts['year'];
-            $eoi->eoi_call_number = $parts['call_number'];
+            if (! $eoi->isDirty('eoi_year')) {
+                $eoi->eoi_year = $parts['year'];
+            }
+            if (! $eoi->isDirty('eoi_call_number')) {
+                $eoi->eoi_call_number = $parts['call_number'];
+            }
         });
     }
 

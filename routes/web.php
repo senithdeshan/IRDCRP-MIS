@@ -5,6 +5,7 @@ use App\Http\Controllers\ProductivePartnershipEoiController;
 use App\Http\Controllers\StaffController;
 use App\Http\Controllers\TankRegistrationController;
 use App\Http\Controllers\YouthWomenApplicantController;
+use App\Http\Controllers\FarmerOrganizationController;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
 
@@ -44,20 +45,22 @@ Route::middleware('auth')->group(function () {
         'description' => 'Printable reports, Excel exports, and management summaries will live here.',
     ])->name('reports.index');
 
-    Route::view('/component-1-2/productive-partnership', 'modules.coming-soon', [
-        'title' => 'Component 1.2 Productive Partnership',
-        'eyebrow' => 'Program component',
-        'description' => 'Main workspace for productive partnership workflows, farmer organizations, EOI shortlisting, field visits, and full proposal preparation.',
-    ])->name('productive-partnership.index');
-
-    Route::view('/component-1-2/farmer-organization-information', 'modules.coming-soon', [
-        'title' => 'Farmer Organization Information',
-        'eyebrow' => 'Component 1.2',
-        'description' => 'Farmer organization profiles, contact details, location information, and organization records will be developed here.',
-    ])->name('farmer-organizations.index');
+    Route::get('/component-1-2/productive-partnership', [FarmerOrganizationController::class, 'overview'])->name('productive-partnership.index');
+    Route::prefix('/component-1-2/farmer-organization-information')->name('farmer-organizations.')->controller(FarmerOrganizationController::class)->group(function () {
+        Route::get('/', 'overview')->name('index');
+        Route::get('/records', 'records')->name('records');
+        Route::get('/create', 'create')->name('create');
+        Route::post('/', 'store')->name('store');
+        Route::get('/template', 'template')->name('template');
+        Route::post('/import', 'import')->name('import');
+        Route::get('/{eoi}/edit', 'edit')->name('edit');
+        Route::patch('/{eoi}', 'update')->name('update');
+    });
 
     Route::prefix('/component-1-2/selected-eois')->name('selected-eois.')->controller(ProductivePartnershipEoiController::class)->group(function () {
         Route::get('/', 'index')->name('index');
+        Route::get('/create', 'create')->name('create');
+        Route::post('/', 'store')->name('store');
         Route::post('/import', 'import')->name('import');
         Route::get('/template', 'template')->name('template');
         Route::get('/export', 'export')->name('export');
@@ -84,9 +87,25 @@ Route::middleware('auth')->group(function () {
     Route::get('/component-1-2/agreement-sign-fop', [ProductivePartnershipEoiController::class, 'agreementSignFop'])->name('agreement-sign-fop.index');
     Route::patch('/component-1-2/agreement-sign-fop/{eoi}/data', [ProductivePartnershipEoiController::class, 'updateAgreementEoiData'])->name('agreement-sign-fop.data');
     Route::get('/component-1-2/agreement-sign-fop/{eoi}/documents/{document}', [ProductivePartnershipEoiController::class, 'downloadAgreementDocument'])->name('agreement-sign-fop.document');
+    Route::get('/component-1-2/agreement-sign-fop/{eoi}/print/{stage?}', [\App\Http\Controllers\AgreementPrintController::class, 'farmer'])->name('agreement-sign-fop.print');
 
     Route::get('/component-1-3/youth-women-entrepreneurs', [YouthWomenApplicantController::class, 'overview'])->name('youth-women.index');
+    Route::get('/component-1-3/received-eois', [YouthWomenApplicantController::class, 'index'])->name('individual-eois.index');
 
+    foreach ([
+        'reviewed-interviews' => 'selected-for-reviewed-interview',
+        'field-visits' => 'selected-for-verification-field-visit-pass',
+        'approved' => 'approved-individual-entrepreneurs',
+        'full-proposals' => 'selected-for-full-proposal-preparation',
+        'agreements' => 'agreement-sign',
+    ] as $stage => $path) {
+        Route::get('/component-1-3/'.$path, [\App\Http\Controllers\IndividualWorkflowController::class, 'index'])
+            ->defaults('stage', $stage)->name('individual-workflow.'.$stage);
+    }
+    Route::patch('/component-1-3/individual-workflow/{applicant}', [\App\Http\Controllers\IndividualWorkflowController::class, 'advance'])->name('individual-workflow.advance');
+    Route::patch('/component-1-3/individual-agreements/{eoi}/data', [\App\Http\Controllers\IndividualAgreementController::class, 'updateAgreementEoiData'])->name('individual-agreement.data');
+    Route::get('/component-1-3/individual-agreements/{eoi}/documents/{document}', [\App\Http\Controllers\IndividualAgreementController::class, 'downloadAgreementDocument'])->name('individual-agreement.document');
+    Route::get('/component-1-3/individual-agreements/{eoi}/print/{stage?}', [\App\Http\Controllers\AgreementPrintController::class, 'individual'])->name('individual-agreement.print');
     Route::view('/component-2', 'modules.coming-soon', [
         'title' => 'Component 2',
         'eyebrow' => 'Program component',

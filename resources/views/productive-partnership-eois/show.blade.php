@@ -62,6 +62,8 @@
                         'Province' => $eoi->province,
                         'District' => $eoi->district,
                         'Divisional Secretariat DS Division' => $eoi->ds_division,
+                        'GN Division (GND)' => $eoi->gn_division,
+                        'Agrarian Service Centre (ASC)' => $eoi->as_centre,
                     ],
                     'Business Proposal' => [
                         'Title of the Business Proposal' => $eoi->business_proposal_title,

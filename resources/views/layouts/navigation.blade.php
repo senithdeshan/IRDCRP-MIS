@@ -88,7 +88,7 @@
     ];
 @endphp
 
-<div x-data="{ sidebarOpen: false }">
+<div data-sidebar-root x-data="{ sidebarOpen: false }">
     <div class="sticky top-0 z-40 border-b border-slate-200 bg-white/95 shadow-sm backdrop-blur lg:hidden">
         <div class="flex h-16 items-center justify-between px-4">
             <a href="{{ route('dashboard') }}" class="flex items-center gap-3">
@@ -127,3 +127,63 @@
         @include('layouts.partials.sidebar-content', ['navItems' => $navItems])
     </aside>
 </div>
+
+<script>
+    // Keep navigation usable if the Vite bundle fails to load on a new install.
+    (() => {
+        const root = document.querySelector('[data-sidebar-root]');
+        root.removeAttribute('x-data');
+        const drawer = root.querySelector('[x-show="sidebarOpen"]');
+        drawer.removeAttribute('x-show');
+        drawer.removeAttribute('x-cloak');
+        drawer.style.display = 'none';
+        const opener = root.querySelector('[\\@click="sidebarOpen = true"]');
+        const setDrawer = (open) => {
+            drawer.style.display = open ? 'block' : 'none';
+            opener.setAttribute('aria-expanded', String(open));
+        };
+        root.querySelectorAll('[\\@click]').forEach((element) => {
+            const action = element.getAttribute('@click');
+            if (action === 'sidebarOpen = true' || action === 'sidebarOpen = false') {
+                element.removeAttribute('@click');
+                element.addEventListener('click', () => setDrawer(action === 'sidebarOpen = true'));
+            }
+        });
+        root.querySelectorAll('.sidebar-nav').forEach((nav, navIndex) => {
+            nav.removeAttribute('x-data');
+            const groups = [...nav.querySelectorAll('[x-id]')];
+            groups.forEach((group, index) => {
+                const button = group.querySelector('.sidebar-component-toggle');
+                if (!button) return;
+                const menu = group.querySelector('.sub-nav-group');
+                const chevron = button.querySelector('.nav-chevron');
+                group.removeAttribute('x-id');
+                ['@click', ':aria-expanded', ':aria-controls', ':aria-label'].forEach((name) => button.removeAttribute(name));
+                [':id', 'x-show', 'x-cloak'].forEach((name) => menu.removeAttribute(name));
+                chevron.removeAttribute(':class');
+                menu.id = `sidebar-menu-${navIndex}-${index}`;
+                button.setAttribute('aria-controls', menu.id);
+                button.setAttribute('aria-label', 'Toggle ' + group.querySelector('.nav-link-label').textContent.trim());
+                const setOpen = (open) => {
+                    menu.style.display = open ? 'block' : 'none';
+                    button.setAttribute('aria-expanded', String(open));
+                    chevron.style.transform = open ? 'rotate(90deg)' : 'rotate(0deg)';
+                };
+                setOpen(menu.getAttribute('data-default-open') === 'true');
+                button.addEventListener('click', () => {
+                    const open = button.getAttribute('aria-expanded') !== 'true';
+                    nav.querySelectorAll('.sidebar-component-toggle[aria-expanded="true"]').forEach((other) => {
+                        if (other !== button) other.click();
+                    });
+                    setOpen(open);
+                });
+            });
+        });
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && drawer.style.display !== 'none') {
+                setDrawer(false);
+                opener.focus();
+            }
+        });
+    })();
+</script>

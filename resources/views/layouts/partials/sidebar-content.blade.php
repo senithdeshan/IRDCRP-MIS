@@ -118,7 +118,7 @@
                             </div>
 
                             @if (! empty($item['children']))
-                                <div class="sub-nav-group" :id="$id('component-menu')" x-show="expandedComponent === @js($item['route'])" x-cloak>
+                                <div class="sub-nav-group" data-default-open="{{ $expandedComponent === $item['route'] ? 'true' : 'false' }}" :id="$id('component-menu')" x-show="expandedComponent === @js($item['route'])" x-cloak>
                                     @foreach ($item['children'] as $child)
                                         @php
                                             $childActivePatterns = (array) $child['active'];

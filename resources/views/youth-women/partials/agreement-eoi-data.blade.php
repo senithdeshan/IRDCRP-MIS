@@ -10,7 +10,7 @@
         }
     }
 @endphp
-<x-modal name="eoi-data-{{ $eoi->id }}" :show="$failed" focusable>
+<x-modal name="eoi-data-{{ $eoi->id }}" :show="$failed" maxWidth="5xl" focusable>
     <form method="POST" action="{{ route('individual-agreement.data', $eoi) }}" enctype="multipart/form-data" role="dialog" aria-modal="true" aria-labelledby="eoi-data-title-{{ $eoi->id }}" class="text-left" x-data="agreementProgress(@js($progressAmounts))" @submit="saving = true">
         @csrf
         @method('PATCH')

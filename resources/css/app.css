@@ -866,6 +866,127 @@ a[href], button, input, select, textarea, summary, [role="button"] {
         background: rgb(248 250 252);
     }
 
+    /* Agreement records need full-width payment details instead of narrow table cells. */
+    .individual-agreement-filters {
+        display: grid;
+        width: 100%;
+        grid-template-columns: minmax(0, 1fr) minmax(10rem, 0.45fr) auto auto;
+        align-items: center;
+    }
+
+    .individual-agreement-filters input,
+    .individual-agreement-filters select {
+        width: 100%;
+        min-width: 0;
+        min-height: 2.75rem;
+    }
+
+    .individual-agreement-table {
+        display: block;
+        width: 100%;
+        border-collapse: separate;
+    }
+
+    .individual-agreement-table thead {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+    }
+
+    .individual-agreement-table tbody {
+        display: grid;
+        gap: 1.25rem;
+        padding: 1.25rem;
+        background: rgb(248 250 252);
+    }
+
+    .individual-agreement-table tbody tr {
+        display: grid;
+        grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 0.65fr);
+        overflow: hidden;
+        border: 1px solid rgb(226 232 240);
+        border-radius: 0.75rem;
+        background: white;
+        box-shadow: 0 2px 6px rgb(15 23 42 / 0.04);
+    }
+
+    .individual-agreement-table td {
+        min-width: 0;
+        overflow-wrap: anywhere;
+        line-height: 1.6;
+    }
+
+    .individual-agreement-table td[data-label]::before {
+        display: block;
+        margin-bottom: 0.75rem;
+        color: rgb(100 116 139);
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        content: attr(data-label);
+    }
+
+    .individual-agreement-table td:nth-child(4) {
+        grid-column: 3;
+        grid-row: 1;
+    }
+
+    .individual-agreement-table .individual-agreement-details {
+        grid-column: 1 / -1;
+        grid-row: 2;
+        border-top: 1px solid rgb(226 232 240);
+    }
+
+    .individual-agreement-payments {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr));
+        gap: 0.75rem;
+    }
+
+    .individual-agreement-payments > div {
+        min-width: 0;
+        background: rgb(248 250 252);
+        border-top: 3px solid rgb(5 150 105);
+    }
+
+    .individual-agreement-page button:focus-visible,
+    .individual-agreement-page a:focus-visible {
+        outline: 2px solid rgb(5 150 105);
+        outline-offset: 3px;
+    }
+
+    @media (max-width: 767px) {
+        .individual-agreement-filters {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .individual-agreement-filters input,
+        .individual-agreement-filters select {
+            grid-column: 1 / -1;
+        }
+
+        .individual-agreement-table tbody {
+            padding: 0.75rem;
+        }
+
+        .individual-agreement-table tbody tr {
+            grid-template-columns: minmax(0, 1fr);
+        }
+
+        .individual-agreement-table td:nth-child(4),
+        .individual-agreement-table .individual-agreement-details {
+            grid-column: auto;
+            grid-row: auto;
+        }
+
+        .individual-agreement-table td + td {
+            border-top: 1px solid rgb(241 245 249);
+        }
+    }
+
     .reviewed-interviews-table {
         border-collapse: separate;
         border-spacing: 0 0.8rem;

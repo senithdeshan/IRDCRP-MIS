@@ -2,8 +2,11 @@
     <x-slot name="header">
         <p class="text-xs font-semibold uppercase tracking-[0.22em] text-emerald-700">Component 1.3 · Individual Entrepreneurs</p>
         <h1 class="mt-1 text-2xl font-semibold text-slate-950">{{ $title }}</h1>
+        @if ($stage === 'agreement')
+            <p class="mt-2 text-sm text-slate-500">Review approved entrepreneurs, record signed agreements and track investment payments.</p>
+        @endif
     </x-slot>
-    <section class="px-4 py-6 sm:px-6 lg:px-8">
+    <section class="px-4 py-6 sm:px-6 lg:px-8 {{ $stage === 'agreement' ? 'individual-agreement-page' : '' }}">
         <div class="mx-auto max-w-7xl space-y-5">
             @if (session('status'))
                 <div role="status" class="rounded-md border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">{{ session('status') }}</div>
@@ -53,7 +56,7 @@
             @endif
             <div class="panel-surface flex flex-wrap items-center justify-between gap-4 p-4">
                 <p class="text-sm text-slate-600"><strong class="text-lg text-slate-950">{{ number_format($total) }}</strong> individuals in this stage</p>
-                <form method="GET" class="flex flex-wrap gap-2">
+                <form method="GET" class="flex flex-wrap gap-2 {{ $stage === 'agreement' ? 'individual-agreement-filters' : '' }}">
                     <input name="search" value="{{ request('search') }}" aria-label="Search applicants" placeholder="EOI, applicant or business" class="min-w-0 rounded-md border-slate-300 text-sm">
                     <select name="status" aria-label="Filter by status" class="rounded-md border-slate-300 text-sm">
                         <option value="">All statuses</option>
@@ -69,7 +72,7 @@
                 <p class="text-sm text-slate-500">Individuals marked Yes in Received All EOI enter this list. Interview marks above 50 move them to field verification. Previous reviews remain visible after moving forward.</p>
             @endif
             <div class="panel-surface overflow-hidden"><div class="overflow-x-auto">
-            <table class="reviewed-interviews-table min-w-full">
+            <table class="{{ $stage === 'agreement' ? 'individual-agreement-table' : 'reviewed-interviews-table' }} min-w-full">
                 <thead class="bg-slate-50"><tr>
                     @foreach (['EOI / Individual', 'Previous Reviews', 'Review / EOI Data', 'Next Step'] as $heading)
                         <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">{{ $heading }}</th>
@@ -91,7 +94,7 @@
                     $options = $stage === 'interview' ? $interviewStatuses : ($stage === 'verification' ? ['pending' => 'Pending', 'approved' => 'Approved', 'not_approved' => 'Not Approved'] : ['pending' => 'Pending', 'approved' => 'Approved', 'rejected' => 'Rejected']);
                 @endphp
                 <tr class="align-top border-b border-slate-100">
-                    <td class="px-5 py-4">
+                    <td data-label="EOI / Individual" class="px-5 py-4">
                         <div>
                             <p class="text-xs font-semibold text-emerald-700">{{ $applicant->eoi_number }}</p>
                             <span class="mt-2 inline-flex rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800">{{ $statusOptions[$applicant->workflowStatus($stage)] ?? 'Pending' }}</span>
@@ -100,16 +103,16 @@
                         </div>
                         <a href="{{ route('business-information.edit', $applicant) }}" class="text-sm font-semibold text-emerald-700">Applicant details</a>
                     </td>
-                    <td class="px-5 py-4 text-sm text-slate-600">
+                    <td data-label="Previous Reviews" class="px-5 py-4 text-sm text-slate-600">
                         <p>Initial Stage: Yes</p>
                         <p class="mt-2">Interview Marks: {{ data_get($applicant->workflow_data, 'interview.marks', 'Pending') }}</p>
                         <p class="mt-2">Interview Review: {{ $interviewStatuses[data_get($applicant->workflow_data, 'interview.interview_status', '')] ?? 'Pending' }}</p>
                         <p class="mt-2">Field Visit: {{ ucfirst(str_replace('_', ' ', data_get($applicant->workflow_data, 'verification.result', 'pending'))) }}</p>
                         <p class="mt-2">Full Proposal: {{ ucfirst(data_get($applicant->workflow_data, 'proposal.result', 'pending')) }}</p>
                     </td>
-                    <td class="min-w-80 space-y-4 p-5">
+                    <td data-label="Agreement &amp; Payment Details" class="{{ $stage === 'agreement' ? 'individual-agreement-details' : 'min-w-80' }} space-y-4 p-5">
                         @if ($stage === 'agreement')
-                            <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+                            <div class="individual-agreement-payments">
                                 @foreach (['investment' => 'Total Investment', 'tr1' => 'TR1', 'tr2' => 'TR2', 'tr3' => 'TR3', 'revised' => 'Revised Investment'] as $key => $label)
                                     <div class="rounded-md border border-slate-200 p-3">
                                         <p class="text-xs font-semibold text-slate-500">{{ $label }}</p>
@@ -185,7 +188,7 @@
                             </details>
                         @endif
                     </td>
-                    <td class="px-5 py-4">
+                    <td data-label="Next Step" class="px-5 py-4">
                         @php($nextPage = match ($applicant->current_workflow_stage) { 'interview' => 'reviewed-interviews', 'verification' => 'field-visits', 'approved' => 'approved', 'proposal' => 'full-proposals', default => 'agreements' })
                         <p class="text-xs font-semibold text-emerald-800">{{ $applicant->current_workflow_stage === 'completed' ? 'Agreement Signed' : $stages[$nextPage][1] }}</p>
                         @if (! $canReview)

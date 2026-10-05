@@ -2,7 +2,7 @@
     $agreementData = $eoi->agreement_eoi_data ?? [];
     $canDownload = in_array($eoi->current_workflow_stage, ['agreement', 'completed'], true);
 @endphp
-<x-modal name="eoi-data-view-{{ $eoi->id }}" focusable>
+<x-modal name="eoi-data-view-{{ $eoi->id }}" maxWidth="5xl" focusable>
     <div role="dialog" aria-modal="true" aria-labelledby="eoi-data-view-title-{{ $eoi->id }}">
         <div class="flex items-start justify-between gap-4 bg-emerald-900 px-6 py-5 text-white">
             <div>

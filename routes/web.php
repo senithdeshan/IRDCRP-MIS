@@ -91,6 +91,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/component-1-3/youth-women-entrepreneurs', [YouthWomenApplicantController::class, 'overview'])->name('youth-women.index');
     Route::get('/component-1-3/received-eois', [YouthWomenApplicantController::class, 'index'])->name('individual-eois.index');
+    Route::patch('/component-1-3/received-eois/{applicant}/initial-stage', [YouthWomenApplicantController::class, 'updateInitialStage'])->name('individual-eois.initial-stage');
 
     foreach ([
         'reviewed-interviews' => 'selected-for-reviewed-interview',

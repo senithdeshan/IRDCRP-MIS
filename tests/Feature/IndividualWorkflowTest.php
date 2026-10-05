@@ -38,7 +38,7 @@ class IndividualWorkflowTest extends TestCase
             $this->assertSame($stage, $applicant->fresh()->workflow_stage);
             $this->get(route('individual-workflow.'.$page))->assertOk()->assertSee('Test Individual');
         }
-        $this->get(route('individual-workflow.reviewed-interviews'))->assertDontSee('Test Individual');
+        $this->get(route('individual-workflow.reviewed-interviews'))->assertSee('Test Individual')->assertSee('Open next step')->assertDontSee('Save Review');
         $this->get(route('individual-workflow.agreements'))->assertSee('AGR-001')->assertDontSee('Record Signed Agreement');
         $this->assertCount(5, $applicant->fresh()->workflow_history);
         $this->patch($url, ['action' => 'agreement', 'agreement_number' => 'DUPLICATE', 'signed_date' => '2026-01-02'])->assertSessionHasErrors('action');
@@ -59,6 +59,26 @@ class IndividualWorkflowTest extends TestCase
         $this->patch($url, ['action' => 'verification', 'result' => 'not_approved', 'visit_date' => '2026-01-01'])->assertRedirect(route('individual-workflow.field-visits'));
         $this->assertSame('verification', $applicant->fresh()->workflow_stage);
         $this->get(route('individual-workflow.approved'))->assertDontSee('Test Individual');
+    }
+
+    public function test_yes_no_initial_stage_controls_the_entire_workflow(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $applicant = $this->applicant('Reject');
+        $this->get(route('individual-eois.index'))->assertOk()->assertSee('Initial: No');
+        $this->patch(route('individual-eois.initial-stage', $applicant), ['initial_stage' => 1])->assertSessionHasNoErrors();
+        $this->get(route('individual-workflow.reviewed-interviews'))->assertOk()->assertSee('Test Individual')->assertSee('Interview Marks');
+        $this->patch(route('individual-workflow.advance', $applicant), [
+            'action' => 'interview', 'marks' => 75, 'interview_status' => 'likely_mature',
+        ])->assertSessionHasNoErrors();
+        $this->get(route('individual-workflow.field-visits'))->assertSee('Test Individual');
+        $this->patch(route('individual-eois.initial-stage', $applicant), ['initial_stage' => 0])->assertSessionHasNoErrors();
+        $this->get(route('individual-workflow.field-visits'))->assertDontSee('Test Individual');
+        $this->assertNull($applicant->fresh()->workflow_stage);
+        $this->patch(route('individual-workflow.advance', $applicant), [
+            'action' => 'verification', 'visit_date' => '2026-01-01', 'result' => 'approved',
+        ])->assertSessionHasErrors('action');
+        $this->patch(route('individual-eois.initial-stage', $applicant), ['initial_stage' => 'invalid'])->assertSessionHasErrors('initial_stage');
     }
 
     public function test_summaries_include_advanced_reviews_and_ignore_search_filters(): void

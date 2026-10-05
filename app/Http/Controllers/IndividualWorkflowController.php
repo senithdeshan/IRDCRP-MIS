@@ -24,13 +24,14 @@ class IndividualWorkflowController extends Controller
         $page = $request->route('stage');
         [$stage, $title] = self::STAGES[$page];
         $query = YouthWomenApplicant::where('initial_screening_result', 'Selected');
-        if ($stage === 'interview') {
-            $query->where(fn ($q) => $q->whereNull('workflow_stage')->orWhere('workflow_stage', 'interview'));
-        } elseif ($stage === 'agreement') {
-            $query->whereIn('workflow_stage', ['agreement', 'completed']);
-        } else {
-            $query->where('workflow_stage', $stage);
-        }
+        $order = ['interview', 'verification', 'approved', 'proposal', 'agreement', 'completed'];
+        $eligibleStages = array_slice($order, array_search($stage, $order));
+        $query->where(function ($q) use ($eligibleStages, $stage) {
+            $q->whereIn('workflow_stage', $eligibleStages);
+            if ($stage === 'interview') {
+                $q->orWhereNull('workflow_stage');
+            }
+        });
         $total = (clone $query)->count();
         // Keep summaries independent of search and pagination, including earlier reviews
         // for applicants who have already advanced to the next step.

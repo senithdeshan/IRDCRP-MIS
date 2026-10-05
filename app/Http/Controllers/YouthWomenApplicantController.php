@@ -73,8 +73,6 @@ class YouthWomenApplicantController extends Controller
         return view('youth-women.index', [
             'workflowCounts' => YouthWomenApplicant::where('initial_screening_result', 'Selected')->get()
                 ->countBy(fn ($applicant) => $applicant->current_workflow_stage),
-            'workflowCounts' => YouthWomenApplicant::where('initial_screening_result', 'Selected')->get()
-                ->countBy(fn ($applicant) => $applicant->current_workflow_stage),
             'summary' => [
                 'total' => (clone $summaryQuery)->count(),
                 'selected' => (clone $summaryQuery)->where('initial_screening_result', 'Selected')->count(),
@@ -173,6 +171,19 @@ class YouthWomenApplicantController extends Controller
         $businessInformation->update($this->validated($request, $businessInformation));
 
         return redirect()->route('business-information.index')->with('status', 'Applicant record updated successfully.');
+    }
+
+    public function updateInitialStage(Request $request, YouthWomenApplicant $applicant): RedirectResponse
+    {
+        $data = $request->validate(['initial_stage' => ['required', 'boolean']]);
+        DB::transaction(function () use ($applicant, $data) {
+            $record = YouthWomenApplicant::lockForUpdate()->findOrFail($applicant->id);
+            $record->update(['initial_screening_result' => $data['initial_stage'] ? 'Selected' : 'Reject']);
+        });
+
+        return back()->with('status', $data['initial_stage']
+            ? 'Initial stage marked Yes. Applicant is ready for reviewed interview.'
+            : 'Initial stage marked No. Applicant removed from the review workflow.');
     }
 
     public function import(Request $request): RedirectResponse

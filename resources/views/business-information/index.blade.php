@@ -28,11 +28,11 @@
                     <p class="mt-3 text-3xl font-semibold text-slate-950">{{ number_format($summary['total']) }}</p>
                 </div>
                 <div class="metric-tile p-5">
-                    <p class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Selected</p>
+                    <p class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Initial Yes</p>
                     <p class="mt-3 text-3xl font-semibold text-emerald-700">{{ number_format($summary['selected']) }}</p>
                 </div>
                 <div class="metric-tile p-5">
-                    <p class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Rejected</p>
+                    <p class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Initial No</p>
                     <p class="mt-3 text-3xl font-semibold text-rose-700">{{ number_format($summary['rejected']) }}</p>
                 </div>
                 <div class="metric-tile p-5">
@@ -114,7 +114,7 @@
                 <select name="initial_screening_result" class="rounded-md border-slate-300 text-sm shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
                     <option value="">All results</option>
                     @foreach ($screeningResults as $result)
-                        <option value="{{ $result }}" @selected(request('initial_screening_result') === $result)>{{ $result }}</option>
+                        <option value="{{ $result }}" @selected(request('initial_screening_result') === $result)>{{ match ($result) { 'Selected' => 'Yes', 'Reject' => 'No', default => 'Pending' } }}</option>
                     @endforeach
                 </select>
                 <button class="rounded-md bg-slate-950 px-4 py-2 text-sm font-semibold text-white">Search</button>
@@ -157,8 +157,17 @@
                                             'bg-rose-100 text-rose-800' => $applicant->initial_screening_result === 'Reject',
                                             'bg-slate-100 text-slate-700' => ! in_array($applicant->initial_screening_result, ['Selected', 'Reject'], true),
                                         ])>
-                                            {{ $applicant->initial_screening_result ?: 'Pending' }}
+                                            Initial: {{ match ($applicant->initial_screening_result) { 'Selected' => 'Yes', 'Reject' => 'No', default => 'Pending' } }}
                                         </span>
+                                        <div class="mt-3 flex gap-2">
+                                            @foreach ([1 => 'Yes', 0 => 'No'] as $value => $label)
+                                                <form method="POST" action="{{ route('individual-eois.initial-stage', $applicant) }}">
+                                                    @csrf @method('PATCH')
+                                                    <input type="hidden" name="initial_stage" value="{{ $value }}">
+                                                    <button class="record-action-btn {{ $value ? 'record-action-yes' : 'record-action-no' }}">{{ $label }}</button>
+                                                </form>
+                                            @endforeach
+                                        </div>
                                     </td>
                                     <td class="px-5 py-4 text-right">
                                         <a href="{{ route('business-information.edit', $applicant) }}" class="rounded-md border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">Edit</a>

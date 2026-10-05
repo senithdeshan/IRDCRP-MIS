@@ -160,7 +160,7 @@
                     <select id="initial_screening_result" name="initial_screening_result" class="mt-2 block w-full rounded-md border-slate-300 text-sm shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
                         <option value="">Pending</option>
                         @foreach ($screeningResults as $result)
-                            <option value="{{ $result }}" @selected(old('initial_screening_result', $applicant->initial_screening_result) === $result)>{{ $result }}</option>
+                            <option value="{{ $result }}" @selected(old('initial_screening_result', $applicant->initial_screening_result) === $result)>{{ match ($result) { 'Selected' => 'Yes', 'Reject' => 'No', default => 'Pending' } }}</option>
                         @endforeach
                     </select>
                 </div>

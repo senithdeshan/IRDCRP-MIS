@@ -66,11 +66,19 @@
                 </form>
             </div>
             @if ($stage === 'interview')
-                <p class="text-sm text-slate-500">Individuals marked Selected in initial screening enter this queue. Interview marks above 50 move them to field verification.</p>
+                <p class="text-sm text-slate-500">Individuals marked Yes in Received All EOI enter this list. Interview marks above 50 move them to field verification. Previous reviews remain visible after moving forward.</p>
             @endif
+            <div class="panel-surface overflow-hidden"><div class="overflow-x-auto">
+            <table class="reviewed-interviews-table min-w-full">
+                <thead class="bg-slate-50"><tr>
+                    @foreach (['EOI / Individual', 'Previous Reviews', 'Review / EOI Data', 'Next Step'] as $heading)
+                        <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">{{ $heading }}</th>
+                    @endforeach
+                </tr></thead><tbody>
             @forelse ($applicants as $applicant)
                 @php
                     $completed = $applicant->workflow_stage === 'completed';
+                    $canReview = $applicant->current_workflow_stage === $stage;
                     $hasOldInput = (string) old('_applicant') === (string) $applicant->id;
                     $saved = $applicant->workflow_data[$stage] ?? [];
                     $fields = match ($stage) {
@@ -82,8 +90,8 @@
                     };
                     $options = $stage === 'interview' ? $interviewStatuses : ($stage === 'verification' ? ['pending' => 'Pending', 'approved' => 'Approved', 'not_approved' => 'Not Approved'] : ['pending' => 'Pending', 'approved' => 'Approved', 'rejected' => 'Rejected']);
                 @endphp
-                <article class="panel-surface overflow-hidden">
-                    <div class="flex flex-wrap items-start justify-between gap-3 border-b border-slate-100 bg-slate-50 px-5 py-4">
+                <tr class="align-top border-b border-slate-100">
+                    <td class="px-5 py-4">
                         <div>
                             <p class="text-xs font-semibold text-emerald-700">{{ $applicant->eoi_number }}</p>
                             <span class="mt-2 inline-flex rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800">{{ $statusOptions[$applicant->workflowStatus($stage)] ?? 'Pending' }}</span>
@@ -91,8 +99,15 @@
                             <p class="mt-1 text-sm text-slate-500">{{ $applicant->business_name }} · {{ $applicant->district ?: 'District not recorded' }} · {{ $applicant->telephone }}</p>
                         </div>
                         <a href="{{ route('business-information.edit', $applicant) }}" class="text-sm font-semibold text-emerald-700">Applicant details</a>
-                    </div>
-                    <div class="space-y-4 p-5">
+                    </td>
+                    <td class="px-5 py-4 text-sm text-slate-600">
+                        <p>Initial Stage: Yes</p>
+                        <p class="mt-2">Interview Marks: {{ data_get($applicant->workflow_data, 'interview.marks', 'Pending') }}</p>
+                        <p class="mt-2">Interview Review: {{ $interviewStatuses[data_get($applicant->workflow_data, 'interview.interview_status', '')] ?? 'Pending' }}</p>
+                        <p class="mt-2">Field Visit: {{ ucfirst(str_replace('_', ' ', data_get($applicant->workflow_data, 'verification.result', 'pending'))) }}</p>
+                        <p class="mt-2">Full Proposal: {{ ucfirst(data_get($applicant->workflow_data, 'proposal.result', 'pending')) }}</p>
+                    </td>
+                    <td class="min-w-80 space-y-4 p-5">
                         @if ($stage === 'agreement')
                             <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
                                 @foreach (['investment' => 'Total Investment', 'tr1' => 'TR1', 'tr2' => 'TR2', 'tr3' => 'TR3', 'revised' => 'Revised Investment'] as $key => $label)
@@ -109,9 +124,9 @@
                                 <button type="button" x-data @click="$dispatch('open-modal', 'eoi-data-view-{{ $applicant->id }}')" class="rounded-md border border-emerald-200 px-4 py-2 text-sm font-semibold text-emerald-800 hover:bg-emerald-50">EOI Data View Details</button>
                             </div>
                         @endif
-                        @if ($completed)
+                        @if ($completed && $stage === 'agreement')
                             <p class="rounded-md bg-emerald-50 p-3 text-sm font-semibold text-emerald-800">Agreement signed: {{ $saved['agreement_number'] ?? '' }} · {{ $saved['signed_date'] ?? '' }}</p>
-                        @else
+                        @elseif ($canReview)
                             <form method="POST" action="{{ route('individual-workflow.advance', $applicant) }}" novalidate class="space-y-4">
                                 @csrf @method('PATCH')
                                 <input type="hidden" name="action" value="{{ $stage }}">
@@ -122,10 +137,21 @@
                                         <div>
                                             <label for="{{ $name }}_{{ $applicant->id }}" class="block text-sm font-medium text-slate-700">{{ $label }} *</label>
                                             @if ($type === 'select')
+                                                @if ($stage === 'interview')
+                                                    <div class="mt-2 grid gap-1">
+                                                        @foreach ($options as $key => $option)
+                                                            <label class="flex items-center gap-2 rounded-md border border-slate-200 px-2 py-1 text-xs text-slate-600">
+                                                                <input type="radio" name="{{ $name }}" value="{{ $key }}" required @checked($value === $key) class="text-emerald-600">
+                                                                {{ $option }}
+                                                            </label>
+                                                        @endforeach
+                                                    </div>
+                                                @else
                                                 <select id="{{ $name }}_{{ $applicant->id }}" name="{{ $name }}" required class="mt-1 block w-full rounded-md border-slate-300 text-sm">
                                                     <option value="">Choose a result</option>
                                                     @foreach ($options as $key => $option)<option value="{{ $key }}" @selected($value === $key)>{{ $option }}</option>@endforeach
                                                 </select>
+                                                @endif
                                             @else
                                                 <input id="{{ $name }}_{{ $applicant->id }}" name="{{ $name }}" type="{{ $type }}" value="{{ $value }}" required @if ($type === 'number') min="0" max="100" step="0.01" @elseif ($type === 'date') max="{{ now()->toDateString() }}" @else maxlength="255" @endif class="mt-1 block w-full rounded-md border-slate-300 text-sm">
                                             @endif
@@ -140,6 +166,8 @@
                                 </div>
                                 <button type="submit" class="rounded-md bg-emerald-700 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-800">{{ match ($stage) { 'approved' => 'Move to Full Proposal Preparation', 'agreement' => 'Record Signed Agreement', default => 'Save Review' } }}</button>
                             </form>
+                        @else
+                            <p class="rounded-md bg-emerald-50 p-3 text-sm font-semibold text-emerald-800">Review saved. Applicant moved to the next stage.</p>
                         @endif
                         @if ($applicant->workflow_history)
                             <details class="rounded-md border border-slate-200 p-3">
@@ -156,15 +184,25 @@
                                 </ol>
                             </details>
                         @endif
-                    </div>
-                </article>
-                @if ($stage === 'agreement')
+                    </td>
+                    <td class="px-5 py-4">
+                        @php($nextPage = match ($applicant->current_workflow_stage) { 'interview' => 'reviewed-interviews', 'verification' => 'field-visits', 'approved' => 'approved', 'proposal' => 'full-proposals', default => 'agreements' })
+                        <p class="text-xs font-semibold text-emerald-800">{{ $applicant->current_workflow_stage === 'completed' ? 'Agreement Signed' : $stages[$nextPage][1] }}</p>
+                        @if (! $canReview)
+                            <a href="{{ route('individual-workflow.'.$nextPage, ['search' => $applicant->eoi_number]) }}" class="mt-3 inline-flex rounded-md border border-emerald-200 px-3 py-2 text-xs font-semibold text-emerald-800">Open next step</a>
+                        @endif
+                    </td>
+                </tr>
+            @empty
+                <tr><td colspan="4" class="p-10 text-center text-sm text-slate-500">No individuals in this stage. Applicants appear after completing the previous step.</td></tr>
+            @endforelse
+            </tbody></table></div></div>
+            @if ($stage === 'agreement')
+                @foreach ($applicants as $applicant)
                     @include('youth-women.partials.agreement-eoi-data', ['eoi' => $applicant])
                     @include('youth-women.partials.agreement-eoi-data-view', ['eoi' => $applicant])
-                @endif
-            @empty
-                <div class="panel-surface p-10 text-center text-sm text-slate-500">No individuals in this stage. Applicants appear after completing the previous step.</div>
-            @endforelse
+                @endforeach
+            @endif
             {{ $applicants->links() }}
         </div>
     </section>

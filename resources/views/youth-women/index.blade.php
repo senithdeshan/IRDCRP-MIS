@@ -55,6 +55,18 @@
                                 <span class="rounded-full px-3 py-1 text-xs font-semibold {{ $step['tone'] }}">{{ number_format($step['count']) }}</span>
                             </a>
                         @endforeach
+                        @foreach (\App\Http\Controllers\IndividualWorkflowController::STAGES as $page => [$key, $label])
+                            <a href="{{ route('individual-workflow.'.$page) }}" class="flex items-center justify-between gap-4 rounded-md border border-slate-200 bg-white px-4 py-3 transition hover:border-emerald-200 hover:bg-emerald-50">
+                                <span class="text-sm font-semibold text-slate-950">{{ $label }}</span>
+                                <span class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800">{{ number_format(($workflowCounts[$key] ?? 0) + ($key === 'agreement' ? ($workflowCounts['completed'] ?? 0) : 0)) }}</span>
+                            </a>
+                        @endforeach
+                        @foreach (\App\Http\Controllers\IndividualWorkflowController::STAGES as $page => [$key, $label])
+                            <a href="{{ route('individual-workflow.'.$page) }}" class="flex items-center justify-between gap-4 rounded-md border border-slate-200 bg-white px-4 py-3 transition hover:border-emerald-200 hover:bg-emerald-50">
+                                <span class="text-sm font-semibold text-slate-950">{{ $label }}</span>
+                                <span class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800">{{ number_format(($workflowCounts[$key] ?? 0) + ($key === 'agreement' ? ($workflowCounts['completed'] ?? 0) : 0)) }}</span>
+                            </a>
+                        @endforeach
                     </div>
                 </div>
 

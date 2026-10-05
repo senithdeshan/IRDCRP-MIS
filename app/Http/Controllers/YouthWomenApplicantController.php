@@ -71,6 +71,10 @@ class YouthWomenApplicantController extends Controller
         $summaryQuery = YouthWomenApplicant::query();
 
         return view('youth-women.index', [
+            'workflowCounts' => YouthWomenApplicant::where('initial_screening_result', 'Selected')->get()
+                ->countBy(fn ($applicant) => $applicant->current_workflow_stage),
+            'workflowCounts' => YouthWomenApplicant::where('initial_screening_result', 'Selected')->get()
+                ->countBy(fn ($applicant) => $applicant->current_workflow_stage),
             'summary' => [
                 'total' => (clone $summaryQuery)->count(),
                 'selected' => (clone $summaryQuery)->where('initial_screening_result', 'Selected')->count(),

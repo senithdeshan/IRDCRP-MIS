@@ -17,11 +17,52 @@
                     <a href="{{ route('individual-workflow.'.$route) }}" @if ($key === $stage) aria-current="page" @endif class="rounded-md border px-3 py-2 text-xs font-semibold {{ $key === $stage ? 'border-emerald-700 bg-emerald-700 text-white' : 'border-slate-200 bg-white text-slate-600' }}">{{ $loop->iteration }}. {{ $label }}</a>
                 @endforeach
             </nav>
+            <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                @foreach ($summaryCards as $label => $count)
+                    <div class="metric-tile p-5">
+                        <p class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">{{ $label }}</p>
+                        <p class="mt-3 text-3xl font-semibold text-emerald-700">{{ number_format($count) }}</p>
+                    </div>
+                @endforeach
+            </div>
+            @if ($stage === 'interview')
+                <div class="panel-surface p-5">
+                    <h2 class="text-base font-semibold text-slate-950">Interview Review Summary</h2>
+                    <div class="mt-4 grid gap-2 sm:grid-cols-2">
+                        @foreach ($interviewStatuses as $key => $label)
+                            <div class="flex items-center justify-between rounded-md bg-slate-50 px-3 py-2 text-sm">
+                                <span class="text-slate-600">{{ $label }}</span>
+                                <strong>{{ number_format($interviewStatusCounts[$key] ?? 0) }}</strong>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
+            @if ($stage === 'agreement')
+                <div class="panel-surface p-5">
+                    <h2 class="text-base font-semibold text-slate-950">Investment &amp; TR Summary</h2>
+                    <div class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+                        @foreach (['investment' => 'Total Investment', 'tr1' => 'TR1', 'tr2' => 'TR2', 'tr3' => 'TR3', 'revised' => 'Revised Investment'] as $key => $label)
+                            <div class="rounded-md bg-slate-50 p-4">
+                                <p class="text-xs font-semibold text-slate-500">{{ $label }} (LKR)</p>
+                                <p class="mt-2 text-xl font-semibold text-emerald-800">{{ number_format($paymentSummary[$key], 2) }}</p>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
             <div class="panel-surface flex flex-wrap items-center justify-between gap-4 p-4">
                 <p class="text-sm text-slate-600"><strong class="text-lg text-slate-950">{{ number_format($total) }}</strong> individuals in this stage</p>
-                <form method="GET" class="flex gap-2">
+                <form method="GET" class="flex flex-wrap gap-2">
                     <input name="search" value="{{ request('search') }}" aria-label="Search applicants" placeholder="EOI, applicant or business" class="min-w-0 rounded-md border-slate-300 text-sm">
+                    <select name="status" aria-label="Filter by status" class="rounded-md border-slate-300 text-sm">
+                        <option value="">All statuses</option>
+                        @foreach ($statusOptions as $key => $label)
+                            <option value="{{ $key }}" @selected(request('status') === $key)>{{ $label }}</option>
+                        @endforeach
+                    </select>
                     <button class="rounded-md bg-slate-950 px-4 py-2 text-sm font-semibold text-white">Search</button>
+                    <a href="{{ url()->current() }}" class="filter-action-secondary">Clear</a>
                 </form>
             </div>
             @if ($stage === 'interview')
@@ -45,6 +86,7 @@
                     <div class="flex flex-wrap items-start justify-between gap-3 border-b border-slate-100 bg-slate-50 px-5 py-4">
                         <div>
                             <p class="text-xs font-semibold text-emerald-700">{{ $applicant->eoi_number }}</p>
+                            <span class="mt-2 inline-flex rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800">{{ $statusOptions[$applicant->workflowStatus($stage)] ?? 'Pending' }}</span>
                             <h2 class="mt-1 text-base font-semibold text-slate-950">{{ $applicant->applicant_name }}</h2>
                             <p class="mt-1 text-sm text-slate-500">{{ $applicant->business_name }} · {{ $applicant->district ?: 'District not recorded' }} · {{ $applicant->telephone }}</p>
                         </div>
@@ -52,6 +94,16 @@
                     </div>
                     <div class="space-y-4 p-5">
                         @if ($stage === 'agreement')
+                            <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+                                @foreach (['investment' => 'Total Investment', 'tr1' => 'TR1', 'tr2' => 'TR2', 'tr3' => 'TR3', 'revised' => 'Revised Investment'] as $key => $label)
+                                    <div class="rounded-md border border-slate-200 p-3">
+                                        <p class="text-xs font-semibold text-slate-500">{{ $label }}</p>
+                                        <p class="mt-2 text-sm font-semibold text-slate-950">LKR {{ number_format(collect(['own', 'loan', 'grant'])->sum(fn ($source) => (int) round((float) data_get($applicant->agreement_eoi_data, "$key.$source", 0) * 100)) / 100, 2) }}</p>
+                                        <p class="mt-1 text-xs text-slate-500">{{ data_get($applicant->agreement_eoi_data, $key === 'investment' ? 'agreement_sign_date' : "$key.date") ?: 'Not recorded' }}</p>
+                                        <x-agreement-progress :stage="$key" :data="$applicant->agreement_eoi_data ?? []" />
+                                    </div>
+                                @endforeach
+                            </div>
                             <div class="flex flex-wrap gap-2">
                                 <button type="button" x-data @click="$dispatch('open-modal', 'eoi-data-{{ $applicant->id }}')" class="rounded-md bg-emerald-700 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-800">Add EOI Data</button>
                                 <button type="button" x-data @click="$dispatch('open-modal', 'eoi-data-view-{{ $applicant->id }}')" class="rounded-md border border-emerald-200 px-4 py-2 text-sm font-semibold text-emerald-800 hover:bg-emerald-50">EOI Data View Details</button>

@@ -54,6 +54,18 @@ class YouthWomenApplicant extends Model
         return $this->initial_screening_result === 'Selected' ? ($this->workflow_stage ?? 'interview') : 'received';
     }
 
+    public function workflowStatus(string $stage): string
+    {
+        $data = $this->workflow_data[$stage] ?? [];
+
+        return match ($stage) {
+            'interview' => ! isset($data['marks']) ? 'pending' : ((float) $data['marks'] > 50 ? 'passed' : 'not_passed'),
+            'verification', 'proposal' => $data['result'] ?? 'pending',
+            'agreement' => $this->workflow_stage === 'completed' ? 'signed' : 'pending',
+            default => isset($this->workflow_data['approved']) ? 'advanced' : 'pending',
+        };
+    }
+
     protected static function booted(): void
     {
         static::saving(function (self $applicant) {

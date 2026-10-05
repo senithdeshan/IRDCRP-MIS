@@ -61,6 +61,43 @@ class IndividualWorkflowTest extends TestCase
         $this->get(route('individual-workflow.approved'))->assertDontSee('Test Individual');
     }
 
+    public function test_summaries_include_advanced_reviews_and_ignore_search_filters(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $applicant = $this->applicant();
+        $this->patch(route('individual-workflow.advance', $applicant), [
+            'action' => 'interview', 'marks' => 75, 'interview_status' => 'likely_mature',
+        ])->assertSessionHasNoErrors();
+
+        $this->get(route('individual-workflow.reviewed-interviews', ['search' => 'missing']))
+            ->assertOk()
+            ->assertViewHas('summaryCards', fn ($cards) => $cards['Total'] === 1 && $cards['Field Visit Pass'] === 1)
+            ->assertViewHas('applicants', fn ($records) => $records->total() === 0);
+
+        $this->get(route('individual-workflow.field-visits', ['status' => 'not_approved']))
+            ->assertOk()
+            ->assertViewHas('summaryCards', fn ($cards) => $cards['Pending'] === 1)
+            ->assertViewHas('applicants', fn ($records) => $records->total() === 0);
+    }
+
+    public function test_agreement_page_shows_saved_tr_totals_and_signed_status(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $applicant = $this->applicant();
+        $applicant->workflow_stage = 'completed';
+        $applicant->workflow_data = ['agreement' => ['agreement_number' => 'AGR-001', 'signed_date' => '2026-01-02']];
+        $applicant->agreement_eoi_data = [
+            'investment' => ['own' => '100.10', 'loan' => '200.20', 'grant' => '300.30'],
+            'tr1' => ['own' => '10.10', 'loan' => '20.20', 'grant' => '30.30', 'date' => '2026-01-03'],
+        ];
+        $applicant->save();
+
+        $this->get(route('individual-workflow.agreements', ['status' => 'signed']))
+            ->assertOk()->assertSee('Investment &amp; TR Summary', false)->assertSee('LKR 60.60')
+            ->assertViewHas('summaryCards', fn ($cards) => $cards['Agreement Signed'] === 1)
+            ->assertViewHas('paymentSummary', fn ($totals) => $totals['investment'] === 600.6 && $totals['tr1'] === 60.6);
+    }
+
     public function test_screening_revocation_resets_workflow_and_retains_history(): void
     {
         $user = User::factory()->create();

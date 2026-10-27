@@ -15,7 +15,7 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
         @stack('head')
     </head>
-    <body class="font-sans antialiased bg-[#f6f7fb] text-slate-800">
+    <body class="font-sans antialiased bg-[#f6f7fb] text-slate-800 {{ request()->routeIs('productive-partnership.*', 'farmer-organizations.*', 'selected-eois.*', 'reviewed-interviews.*', 'field-visits.*', 'approved-farmer-producer-groups.*', 'full-proposals.*', 'agreement-sign-fop.*', 'youth-women.*', 'business-information.*', 'individual-eois.*', 'individual-workflow.*', 'individual-agreement.*') ? 'component-workspace' : '' }}">
         <div class="min-h-screen lg:pl-72">
             @include('layouts.navigation')
 
@@ -76,7 +76,7 @@
                 <h2 id="confirm-dialog-title" class="confirm-dialog-title" data-confirm-title-text>Confirm action</h2>
                 <p class="confirm-dialog-message" data-confirm-message-text>Are you sure you want to continue?</p>
                 <div class="confirm-dialog-actions">
-                    <button type="button" class="confirm-dialog-cancel" data-confirm-cancel>Cancel</button>
+                    <button type="button" class="confirm-dialog-cancel" data-confirm-cancel data-confirm-cancel-button>Cancel</button>
                     <button type="button" class="confirm-dialog-submit" data-confirm-submit>Confirm</button>
                 </div>
             </div>
@@ -88,6 +88,7 @@
                 const title = dialog.querySelector('[data-confirm-title-text]');
                 const message = dialog.querySelector('[data-confirm-message-text]');
                 const submitButton = dialog.querySelector('[data-confirm-submit]');
+                const cancelButton = dialog.querySelector('[data-confirm-cancel-button]');
                 const mark = dialog.querySelector('[data-confirm-mark]');
                 let pendingForm = null;
 
@@ -102,6 +103,7 @@
                     title.textContent = form.dataset.confirmTitle || 'Confirm action';
                     message.textContent = form.dataset.confirmMessage || 'Are you sure you want to continue?';
                     submitButton.textContent = form.dataset.confirmAction || 'Confirm';
+                    cancelButton.textContent = form.dataset.confirmCancel || 'Cancel';
                     submitButton.dataset.tone = form.dataset.confirmTone || 'slate';
                     mark.dataset.tone = form.dataset.confirmTone || 'slate';
                     dialog.classList.add('is-open');

@@ -37,8 +37,10 @@ class StaffController extends Controller
         'settings.manage' => 'Settings',
     ];
 
-    public function index(): View
+    public function index(Request $request): View
     {
+        $this->authorizeManagement($request);
+
         return view('staff.index', [
             'staff' => User::query()->latest()->paginate(10),
             'roles' => self::ROLES,
@@ -47,6 +49,8 @@ class StaffController extends Controller
 
     public function create(): View
     {
+        $this->authorizeManagement(request());
+
         return view('staff.create', [
             'roles' => $this->assignableRoles(),
             'permissions' => self::PERMISSIONS,
@@ -55,6 +59,8 @@ class StaffController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
+        $this->authorizeManagement($request);
+
         $data = $this->validated($request);
         $data['permissions'] = $request->input('permissions', []);
 
@@ -65,6 +71,8 @@ class StaffController extends Controller
 
     public function edit(User $staff): View
     {
+        $this->authorizeManagement(request());
+
         abort_if($staff->isProtectedSuperAdmin() && ! request()->user()->is($staff), 403);
 
         return view('staff.edit', [
@@ -76,6 +84,8 @@ class StaffController extends Controller
 
     public function update(Request $request, User $staff): RedirectResponse
     {
+        $this->authorizeManagement($request);
+
         abort_if($staff->isProtectedSuperAdmin() && ! $request->user()->is($staff), 403);
 
         $data = $this->validated($request, $staff);
@@ -122,5 +132,10 @@ class StaffController extends Controller
     private function assignableRoles(): array
     {
         return array_diff_key(self::ROLES, ['super_admin' => true]);
+    }
+
+    private function authorizeManagement(Request $request): void
+    {
+        abort_unless($request->user()->isSuperAdmin() || in_array($request->user()->role, ['admin', 'administrator'], true), 403);
     }
 }

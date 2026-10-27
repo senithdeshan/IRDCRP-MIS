@@ -57,6 +57,7 @@
                                         <div class="font-semibold text-slate-950">{{ $eoi->eoi_number }}</div>
                                         <div class="text-sm text-slate-600">{{ $eoi->organization_name ?: 'N/A' }}</div>
                                         <div class="mt-1 text-xs text-slate-400">{{ $eoi->province }} / {{ $eoi->district }} / {{ $eoi->ds_division }}</div>
+                                        <button type="button" x-data @click="$dispatch('open-modal', 'member-details-{{ $eoi->id }}')" class="mt-3 inline-flex rounded-md border border-cyan-200 bg-cyan-50 px-3 py-2 text-xs font-semibold text-cyan-800 transition hover:bg-cyan-100">View Member Details</button>
                                     </td>
                                     <td class="px-5 py-4 text-sm text-slate-600">
                                         <div class="font-medium text-slate-800">{{ $eoi->business_proposal_title ?: 'N/A' }}</div>
@@ -95,6 +96,7 @@
             </div>
             @foreach ($eois as $eoi)
                 @include('productive-partnership-eois.partials.agreement-eoi-data')
+                @include('productive-partnership-eois.partials.member-details-modal')
             @endforeach
         </div>
     </section>

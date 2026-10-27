@@ -19,11 +19,39 @@
     </div>
 
     @php
-        $expandedComponent = collect($navItems)->first(fn ($item) => ! empty($item['children']) && request()->routeIs(...(array) $item['active']))['route'] ?? null;
+        $expandedComponent = collect($navItems)->first(fn ($item) => ! empty($item['children'])
+            && request()->routeIs(...(array) $item['active'])
+            && collect($item['active_params'] ?? [])->every(fn ($value, $key) => request($key) === $value))['route'] ?? null;
         if ($expandedComponent === null && request()->routeIs('dashboard')) {
             $expandedComponent = 'productive-partnership.index';
         }
+
+        $findActiveNavLabel = function (array $items) use (&$findActiveNavLabel) {
+            foreach ($items as $item) {
+                if (! empty($item['children'])) {
+                    $childLabel = $findActiveNavLabel($item['children']);
+                    if ($childLabel !== null) {
+                        return $childLabel;
+                    }
+                }
+
+                $activePatterns = (array) ($item['active'] ?? []);
+                $activeParams = $item['active_params'] ?? [];
+                if ($activePatterns !== []
+                    && request()->routeIs(...$activePatterns)
+                    && collect($activeParams)->every(fn ($value, $key) => request($key) === $value)) {
+                    return $item['label'];
+                }
+            }
+
+            return null;
+        };
+        $selectedNavLabel = $findActiveNavLabel($navItems);
     @endphp
+    <div class="sidebar-current-selection" aria-live="polite">
+        <span class="sidebar-current-selection-label">Current tab</span>
+        <span class="sidebar-current-selection-name">{{ $selectedNavLabel ?? 'Navigation' }}</span>
+    </div>
     <nav class="sidebar-nav" x-data="{ expandedComponent: @js($expandedComponent) }">
         @foreach (collect($navItems)->groupBy('section') as $section => $items)
             <div class="sidebar-section">

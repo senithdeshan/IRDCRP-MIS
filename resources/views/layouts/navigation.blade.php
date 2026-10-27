@@ -1,7 +1,7 @@
 @php
     $navItems = [
         ['label' => 'Dashboard', 'route' => 'dashboard', 'active' => 'dashboard', 'accent' => '#0f766e', 'icon' => 'dashboard', 'section' => 'Workspace'],
-        ['label' => 'Staff', 'route' => 'staff.index', 'active' => 'staff.*', 'accent' => '#2563eb', 'icon' => 'staff', 'section' => 'Workspace'],
+        ['label' => 'STAFF PROFILE IRDCRP', 'route' => 'staff-profiles.index', 'active' => 'staff-profiles.*', 'accent' => '#2563eb', 'icon' => 'staff', 'section' => 'Workspace'],
         [
             'label' => 'Component 1.2',
             'caption' => 'Productive Partnership',
@@ -18,7 +18,6 @@
                     'children' => [
                         ['label' => 'Received All EOI', 'route' => 'selected-eois.index', 'active' => 'selected-eois.*'],
                         ['label' => 'Farmer Group Information', 'route' => 'farmer-organizations.records', 'active' => 'farmer-organizations.records', 'active_params' => ['initial_screening_result' => null]],
-                        ['label' => 'Add Farmer Group', 'route' => 'farmer-organizations.create', 'active' => 'farmer-organizations.create'],
                         ['label' => 'Selected Farmer Groups', 'route' => 'farmer-organizations.records', 'params' => ['initial_screening_result' => 'Selected'], 'active' => 'farmer-organizations.records', 'active_params' => ['initial_screening_result' => 'Selected']],
                         ['label' => 'Rejected Farmer Groups', 'route' => 'farmer-organizations.records', 'params' => ['initial_screening_result' => 'Reject'], 'active' => 'farmer-organizations.records', 'active_params' => ['initial_screening_result' => 'Reject']],
                         ['label' => 'Selected for Reviewed Interview', 'route' => 'reviewed-interviews.index', 'active' => 'reviewed-interviews.*'],
@@ -81,6 +80,32 @@
             'children' => [
                 ['label' => 'Cascade Registration', 'route' => 'cascade-registration.index', 'active' => 'cascade-registration.*'],
                 ['label' => 'Tank Registration', 'route' => 'tank-registration.index', 'active' => 'tank-registration.*'],
+            ],
+        ],
+        [
+            'label' => 'Irrigation Infrastructure Assets Rehabilitated / Modernized',
+            'route' => 'irrigation-assets.overview',
+            'active' => ['irrigation-assets.*', 'irrigation-farmer-organizations.*'],
+            'accent' => '#0f766e',
+            'icon' => 'records',
+            'section' => 'IRDCRP modules',
+            'children' => [
+                ['label' => 'Scheme Details (A and B)', 'route' => 'irrigation-assets.index', 'active' => 'irrigation-assets.*'],
+                ['label' => 'Farmer Organization & Members (C and D)', 'route' => 'irrigation-farmer-organizations.index', 'active' => 'irrigation-farmer-organizations.*'],
+            ],
+        ],
+        [
+            'label' => 'CERC', 'route' => 'cerc.index',
+            'active' => ['cerc-assets.*', 'cerc-farmer-organizations.*'], 'accent' => '#0f766e', 'icon' => 'records', 'section' => 'IRDCRP modules',
+            'children' => [
+                ['label' => 'Minor Tank', 'route' => 'cerc-assets.index', 'params' => ['tank_type' => 'minor'], 'active' => 'cerc-assets.*', 'active_params' => ['tank_type' => 'minor'], 'children' => [
+                    ['label' => 'Scheme Details (A and B)', 'route' => 'cerc-assets.index', 'params' => ['tank_type' => 'minor'], 'active' => 'cerc-assets.*', 'active_params' => ['tank_type' => 'minor']],
+                    ['label' => 'Farmer Organization & Members (C and D)', 'route' => 'cerc-farmer-organizations.index', 'params' => ['tank_type' => 'minor'], 'active' => 'cerc-farmer-organizations.*', 'active_params' => ['tank_type' => 'minor']],
+                ]],
+                ['label' => 'Major Tanks', 'route' => 'cerc-assets.index', 'params' => ['tank_type' => 'major'], 'active' => 'cerc-assets.*', 'active_params' => ['tank_type' => 'major'], 'children' => [
+                    ['label' => 'Scheme Details (A and B)', 'route' => 'cerc-assets.index', 'params' => ['tank_type' => 'major'], 'active' => 'cerc-assets.*', 'active_params' => ['tank_type' => 'major']],
+                    ['label' => 'Farmer Organization & Members (C and D)', 'route' => 'cerc-farmer-organizations.index', 'params' => ['tank_type' => 'major'], 'active' => 'cerc-farmer-organizations.*', 'active_params' => ['tank_type' => 'major']],
+                ]],
             ],
         ],
         ['label' => 'Reports', 'route' => 'reports.index', 'active' => 'reports.*', 'accent' => '#059669', 'icon' => 'reports', 'section' => 'Management'],

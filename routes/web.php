@@ -3,9 +3,16 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProductivePartnershipEoiController;
 use App\Http\Controllers\StaffController;
+use App\Http\Controllers\StaffProfileController;
 use App\Http\Controllers\TankRegistrationController;
 use App\Http\Controllers\YouthWomenApplicantController;
 use App\Http\Controllers\FarmerOrganizationController;
+use App\Http\Controllers\IrrigationInfrastructureAssetController;
+use App\Http\Controllers\IrrigationFarmerOrganizationController;
+use App\Http\Controllers\IrrigationInfrastructureExcelController;
+use App\Http\Controllers\CercInfrastructureAssetController;
+use App\Http\Controllers\CercInfrastructureExcelController;
+use App\Http\Controllers\CercFarmerOrganizationController;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
 
@@ -19,6 +26,15 @@ Route::get('/dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
+    Route::get('/staff-profiles', [StaffProfileController::class, 'index'])->name('staff-profiles.index');
+    Route::get('/staff-profiles/create', [StaffProfileController::class, 'create'])->name('staff-profiles.create');
+    Route::post('/staff-profiles', [StaffProfileController::class, 'store'])->name('staff-profiles.store');
+    Route::get('/staff-profiles/{staffProfile}', [StaffProfileController::class, 'show'])->name('staff-profiles.show');
+    Route::get('/staff-profiles/{staffProfile}/edit', [StaffProfileController::class, 'edit'])->name('staff-profiles.edit');
+    Route::put('/staff-profiles/{staffProfile}', [StaffProfileController::class, 'update'])->name('staff-profiles.update');
+    Route::delete('/staff-profiles/{staffProfile}', [StaffProfileController::class, 'destroy'])->name('staff-profiles.destroy');
+    Route::get('/staff-profiles/{staffProfile}/documents/{type}', [StaffProfileController::class, 'document'])->name('staff-profiles.document');
+
     Route::resource('staff', StaffController::class)->except(['show', 'destroy']);
 
     Route::view('/projects', 'modules.coming-soon', [
@@ -114,6 +130,34 @@ Route::middleware('auth')->group(function () {
     ])->name('component-two.index');
 
     Route::view('/component-2/cascade-registration', 'cascade-registration.index')->name('cascade-registration.index');
+
+    Route::get('/irrigation-infrastructure-assets/template', [IrrigationInfrastructureExcelController::class, 'template'])->name('irrigation-assets.template');
+    Route::get('/irrigation-infrastructure-assets/export', [IrrigationInfrastructureExcelController::class, 'export'])->name('irrigation-assets.export');
+    Route::post('/irrigation-infrastructure-assets/import', [IrrigationInfrastructureExcelController::class, 'import'])->name('irrigation-assets.import');
+    Route::get('/irrigation-infrastructure-assets', [IrrigationInfrastructureAssetController::class, 'overview'])
+        ->name('irrigation-assets.overview');
+
+    Route::resource('component-2/irrigation-infrastructure-assets', IrrigationInfrastructureAssetController::class)
+        ->except(['destroy'])
+        ->names('irrigation-assets');
+    Route::delete('/component-2/irrigation-infrastructure-assets/{irrigation_infrastructure_asset}', [IrrigationInfrastructureAssetController::class, 'destroy'])
+        ->name('irrigation-assets.destroy');
+
+    Route::resource('irrigation-farmer-organizations', IrrigationFarmerOrganizationController::class)
+        ->names('irrigation-farmer-organizations');
+
+    Route::get('/cerc', [CercInfrastructureAssetController::class, 'overview'])->name('cerc.index');
+    Route::get('/cerc-assets/template', [CercInfrastructureExcelController::class, 'template'])->name('cerc-assets.template');
+    Route::get('/cerc-assets/export', [CercInfrastructureExcelController::class, 'export'])->name('cerc-assets.export');
+    Route::post('/cerc-assets/import', [CercInfrastructureExcelController::class, 'import'])->name('cerc-assets.import');
+    Route::resource('cerc-assets', CercInfrastructureAssetController::class)
+        ->except(['destroy'])
+        ->names('cerc-assets')
+        ->parameters(['cerc-assets' => 'cercInfrastructureAsset']);
+    Route::delete('/cerc-assets/{cercInfrastructureAsset}', [CercInfrastructureAssetController::class, 'destroy'])
+        ->name('cerc-assets.destroy');
+    Route::resource('cerc-farmer-organizations', CercFarmerOrganizationController::class)
+        ->names('cerc-farmer-organizations');
 
     Route::prefix('/component-2/tank-registration')->name('tank-registration.')->controller(TankRegistrationController::class)->group(function () {
         Route::get('/', 'index')->name('index');

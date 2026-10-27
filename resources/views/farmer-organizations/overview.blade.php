@@ -8,7 +8,6 @@
             </div>
             <div class="flex flex-wrap gap-2">
                 <a href="{{ route('farmer-organizations.template') }}" class="rounded-md border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">Download Template</a>
-                <a href="{{ route('farmer-organizations.create') }}" class="rounded-md bg-slate-950 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800">Add Farmer Group</a>
             </div>
         </div>
     </x-slot>

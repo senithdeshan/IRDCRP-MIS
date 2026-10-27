@@ -19,7 +19,7 @@
                         <p class="mt-3 text-sm leading-6 text-slate-200">Your staff, permissions, core modules, and reporting areas are now arranged in a focused management shell.</p>
                     </div>
                     <div class="mt-7 flex flex-wrap gap-3">
-                        <a href="{{ route('staff.index') }}" class="rounded-md bg-white px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-slate-100">Manage Staff</a>
+                        <a href="{{ route('staff-profiles.index') }}" class="rounded-md bg-white px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-slate-100">View Staff Profiles</a>
                         <a href="{{ route('reports.index') }}" class="rounded-md border border-white/25 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/10">Reports</a>
                     </div>
                 </div>

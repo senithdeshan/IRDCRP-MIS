@@ -73,10 +73,12 @@ Route::middleware('auth')->group(function () {
         Route::patch('/{eoi}', 'update')->name('update');
     });
 
-    Route::prefix('/component-1-2/selected-eois')->name('selected-eois.')->controller(ProductivePartnershipEoiController::class)->group(function () {
+    Route::prefix('/component-1-2/received-all-eoi')->name('selected-eois.')->controller(ProductivePartnershipEoiController::class)->group(function () {
         Route::get('/', 'index')->name('index');
         Route::get('/create', 'create')->name('create');
+        Route::get('/{eoi}/edit', 'editEntry')->name('edit');
         Route::post('/', 'store')->name('store');
+        Route::patch('/{eoi}', 'updateEntry')->name('update');
         Route::post('/import', 'import')->name('import');
         Route::get('/template', 'template')->name('template');
         Route::get('/export', 'export')->name('export');
@@ -84,26 +86,30 @@ Route::middleware('auth')->group(function () {
         Route::patch('/{eoi}/initial-stage', 'updateInitialStage')->name('initial-stage');
         Route::delete('/{eoi}', 'destroy')->name('destroy');
     });
+    Route::redirect('/component-1-2/selected-eois', '/component-1-2/received-all-eoi');
 
-    Route::get('/component-1-2/selected-for-reviewed-interview', [ProductivePartnershipEoiController::class, 'reviewedInterviews'])->name('reviewed-interviews.index');
+    Route::get('/component-1-2/selected-for-review-interview', [ProductivePartnershipEoiController::class, 'reviewedInterviews'])->name('reviewed-interviews.index');
+    Route::redirect('/component-1-2/selected-for-reviewed-interview', '/component-1-2/selected-for-review-interview');
     Route::patch('/component-1-2/selected-for-reviewed-interview/{eoi}/interview-marks', [ProductivePartnershipEoiController::class, 'updateInterviewMarks'])->name('reviewed-interviews.interview-marks');
-    Route::patch('/component-1-2/selected-for-verification-field-visit-pass/{eoi}/interview-marks', [ProductivePartnershipEoiController::class, 'updateInterviewMarks'])->name('field-visits.interview-marks');
-    Route::get('/component-1-2/selected-for-verification-field-visit-pass', [ProductivePartnershipEoiController::class, 'fieldVisits'])->name('field-visits.index');
-    Route::patch('/component-1-2/selected-for-verification-field-visit-pass/{eoi}/verification-status', [ProductivePartnershipEoiController::class, 'updateVerificationStatus'])->name('field-visits.verification-status');
-    Route::redirect('/component-1-2/selected-for-field-visit', '/component-1-2/selected-for-verification-field-visit-pass');
+    Route::patch('/component-1-2/selected-for-verification-field-visit/{eoi}/interview-marks', [ProductivePartnershipEoiController::class, 'updateInterviewMarks'])->name('field-visits.interview-marks');
+    Route::get('/component-1-2/selected-for-verification-field-visit', [ProductivePartnershipEoiController::class, 'fieldVisits'])->name('field-visits.index');
+    Route::patch('/component-1-2/selected-for-verification-field-visit/{eoi}/verification-status', [ProductivePartnershipEoiController::class, 'updateVerificationStatus'])->name('field-visits.verification-status');
+    Route::redirect('/component-1-2/selected-for-verification-field-visit-pass', '/component-1-2/selected-for-verification-field-visit');
+    Route::redirect('/component-1-2/selected-for-field-visit', '/component-1-2/selected-for-verification-field-visit');
     Route::patch('/component-1-2/selected-for-field-visit/{eoi}/interview-marks', [ProductivePartnershipEoiController::class, 'updateInterviewMarks']);
     Route::patch('/component-1-2/selected-for-field-visit/{eoi}/verification-status', [ProductivePartnershipEoiController::class, 'updateVerificationStatus']);
-    Route::get('/component-1-2/approved-farmer-producer-groups', [ProductivePartnershipEoiController::class, 'approved'])->name('approved-farmer-producer-groups.index');
-    Route::get('/component-1-2/approved-farmer-producer-groups/{eoi}/edit', [ProductivePartnershipEoiController::class, 'editApproved'])->name('approved-farmer-producer-groups.edit');
-    Route::patch('/component-1-2/approved-farmer-producer-groups/{eoi}', [ProductivePartnershipEoiController::class, 'updateApproved'])->name('approved-farmer-producer-groups.update');
-    Route::patch('/component-1-2/approved-farmer-producer-groups/{eoi}/agreement-tracking', [ProductivePartnershipEoiController::class, 'updateAgreementTracking'])->name('approved-farmer-producer-groups.agreement-tracking');
+    Route::get('/component-1-2/selected-for-proposal-preparation', [ProductivePartnershipEoiController::class, 'approved'])->name('approved-farmer-producer-groups.index');
+    Route::redirect('/component-1-2/approved-farmer-producer-groups', '/component-1-2/selected-for-proposal-preparation');
+    Route::get('/component-1-2/selected-for-proposal-preparation/{eoi}/edit', [ProductivePartnershipEoiController::class, 'editApproved'])->name('approved-farmer-producer-groups.edit');
+    Route::patch('/component-1-2/selected-for-proposal-preparation/{eoi}', [ProductivePartnershipEoiController::class, 'updateApproved'])->name('approved-farmer-producer-groups.update');
+    Route::patch('/component-1-2/selected-for-proposal-preparation/{eoi}/agreement-tracking', [ProductivePartnershipEoiController::class, 'updateAgreementTracking'])->name('approved-farmer-producer-groups.agreement-tracking');
 
-    Route::get('/component-1-2/selected-for-full-proposal-preparation', [ProductivePartnershipEoiController::class, 'fullProposals'])->name('full-proposals.index');
-    Route::patch('/component-1-2/selected-for-full-proposal-preparation/{eoi}/status', [ProductivePartnershipEoiController::class, 'updateFullProposalStatus'])->name('full-proposals.status');
-    Route::get('/component-1-2/agreement-sign-fop', [ProductivePartnershipEoiController::class, 'agreementSignFop'])->name('agreement-sign-fop.index');
-    Route::patch('/component-1-2/agreement-sign-fop/{eoi}/data', [ProductivePartnershipEoiController::class, 'updateAgreementEoiData'])->name('agreement-sign-fop.data');
-    Route::get('/component-1-2/agreement-sign-fop/{eoi}/documents/{document}', [ProductivePartnershipEoiController::class, 'downloadAgreementDocument'])->name('agreement-sign-fop.document');
-    Route::get('/component-1-2/agreement-sign-fop/{eoi}/print/{stage?}', [\App\Http\Controllers\AgreementPrintController::class, 'farmer'])->name('agreement-sign-fop.print');
+    Route::redirect('/component-1-2/selected-for-full-proposal-preparation', '/component-1-2/selected-for-proposal-preparation')->name('full-proposals.index');
+    Route::get('/component-1-2/agreement-signed-fpo', [ProductivePartnershipEoiController::class, 'agreementSignFop'])->name('agreement-sign-fop.index');
+    Route::redirect('/component-1-2/agreement-sign-fop', '/component-1-2/agreement-signed-fpo');
+    Route::patch('/component-1-2/agreement-signed-fpo/{eoi}/data', [ProductivePartnershipEoiController::class, 'updateAgreementEoiData'])->name('agreement-sign-fop.data');
+    Route::get('/component-1-2/agreement-signed-fpo/{eoi}/documents/{document}', [ProductivePartnershipEoiController::class, 'downloadAgreementDocument'])->name('agreement-sign-fop.document');
+    Route::get('/component-1-2/agreement-signed-fpo/{eoi}/print/{stage?}', [\App\Http\Controllers\AgreementPrintController::class, 'farmer'])->name('agreement-sign-fop.print');
 
     Route::get('/component-1-3/youth-women-entrepreneurs', [YouthWomenApplicantController::class, 'overview'])->name('youth-women.index');
     Route::get('/component-1-3/received-eois', [YouthWomenApplicantController::class, 'index'])->name('individual-eois.index');

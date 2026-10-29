@@ -67,9 +67,10 @@
     }
 @endphp
 
-<section class="px-4 pb-6 sm:px-6 lg:px-8" aria-labelledby="single-entry-title">
-    <form method="POST" action="{{ $formAction ?? route('selected-eois.store') }}" novalidate class="eoi-entry-form panel-surface mx-auto max-w-7xl overflow-hidden" x-data="eoiEntryLocation(@js($administrativeDivisions), @js($locationRecords), @js(collect($entryValues)->only(['province', 'district', 'ds_division', 'as_centre', 'gn_division'])))">
+<section class="eoi-entry-section" aria-labelledby="single-entry-title">
+    <form method="POST" action="{{ $formAction ?? route('selected-eois.store') }}" class="eoi-entry-form panel-surface mx-auto max-w-7xl overflow-hidden" x-data="eoiEntryLocation(@js($administrativeDivisions), @js($locationRecords), @js(collect($entryValues)->only(['province', 'district', 'ds_division', 'as_centre', 'gn_division'])))">
         @csrf
+        @if (request('from'))<input type="hidden" name="from" value="{{ request('from') }}">@endif
         @if (($formMethod ?? 'POST') === 'PATCH') @method('PATCH') @endif
         <div class="border-b border-emerald-100 bg-emerald-50/60 px-5 py-4">
             <div class="flex flex-wrap items-center justify-between gap-2">
@@ -96,7 +97,7 @@
                         <div class="min-w-0 {{ $type === 'textarea' ? 'sm:col-span-2' : '' }}">
                             <label for="single_{{ $name }}" class="block text-xs font-medium text-slate-600">{{ $label }} @if ($required)<span class="text-rose-600">*</span>@endif</label>
                             @if ($type === 'screening')
-                                <select id="single_{{ $name }}" name="{{ $name }}" class="{{ $control }}" required aria-describedby="error_{{ $name }}">
+                                <select id="single_{{ $name }}" name="{{ $name }}" class="{{ $control }}" required aria-describedby="error_{{ $name }}" aria-invalid="{{ $errors->has($name) ? 'true' : 'false' }}">
                                     @foreach (['Pending', 'Selected', 'Reject'] as $result)
                                         <option value="{{ $result }}" @selected(($entryValues[$name] ?? 'Pending') === $result)>{{ $result }}</option>
                                     @endforeach
@@ -134,7 +135,9 @@
                                 <textarea id="single_{{ $name }}" name="{{ $name }}" rows="2" maxlength="5000" class="{{ $control }}" @required($required) aria-describedby="error_{{ $name }}" aria-invalid="{{ $errors->has($name) ? 'true' : 'false' }}">{{ ($entryValues[$name] ?? '') }}</textarea>
                             @else
                                 <input id="single_{{ $name }}" name="{{ $name }}" type="{{ $type === 'money' ? 'number' : $type }}" value="{{ ($entryValues[$name] ?? '') }}" class="{{ $control }}" @required($required) aria-describedby="error_{{ $name }}" aria-invalid="{{ $errors->has($name) ? 'true' : 'false' }}"
-                                    @if ($name === 'eoi_number') placeholder="EOI/PP/2026/1/131" maxlength="255"
+                                    @if ($name === 'eoi_number') placeholder="EOI/PP/2026/1/131" maxlength="255" autocomplete="off"
+                                    @elseif ($type === 'tel') inputmode="tel" autocomplete="tel" pattern="[+]?[0-9 ()-]{7,30}"
+                                    @elseif ($type === 'email') autocomplete="email"
                                     @elseif ($type === 'money') min="{{ $name === 'expected_grant_irdcrp' ? '0' : '0.01' }}" max="9999999999999.99" step="0.01"
                                     @elseif ($type === 'number') min="1" max="4294967295" step="1"
                                     @elseif ($type === 'date') max="{{ now()->format('Y-m-d') }}"

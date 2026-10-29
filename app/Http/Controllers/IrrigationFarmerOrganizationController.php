@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Rules\SriLankanNic;
 use App\Models\IrrigationFarmerOrganization;
 use App\Models\IrrigationInfrastructureAsset;
 use Illuminate\Http\RedirectResponse;
@@ -123,7 +124,7 @@ class IrrigationFarmerOrganizationController extends Controller
             'members.*.membership_number' => ['nullable', 'string', 'max:100'],
             'members.*.name_with_initials' => ['required', 'string', 'max:255'],
             'members.*.gender' => ['nullable', Rule::in(self::GENDERS)],
-            'members.*.nic_number' => ['nullable', 'regex:/^(\d{10}|\d{12})$/'],
+            'members.*.nic_number' => ['nullable', 'string', 'max:12', new SriLankanNic],
             'members.*.phone_number' => ['nullable', 'regex:/^\d{10}$/'],
             'members.*.address' => ['nullable', 'string', 'max:5000'],
             'members.*.province' => ['nullable', 'string', 'max:255'],
@@ -137,7 +138,6 @@ class IrrigationFarmerOrganizationController extends Controller
             'irrigation_infrastructure_asset_id.unique' => 'A Farmer Organization is already registered for the selected scheme.',
             'email.email' => 'Enter a valid Email Address.',
             'members.required' => 'Add at least one Farmer Organization Member.',
-            'members.*.nic_number.regex' => 'Member NIC must contain exactly 10 or 12 digits.',
             'members.*.phone_number.regex' => 'Member Phone Number must contain exactly 10 digits.',
         ], [
             'irrigation_infrastructure_asset_id' => 'Scheme',

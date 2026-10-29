@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\YouthWomenApplicant;
+use App\Rules\SriLankanNic;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -268,7 +269,7 @@ class YouthWomenApplicantController extends Controller
             'eoi_number' => ['required', 'string', 'max:255', Rule::unique('youth_women_applicants')->ignore($applicant)],
             'applicant_name' => ['required', 'string', 'max:255'],
             'gender' => ['required', Rule::in(self::GENDERS)],
-            'nic' => ['required', 'string', 'max:20'],
+            'nic' => ['required', 'string', 'max:20', new SriLankanNic],
             'date_of_birth' => ['nullable', 'date'],
             'age_as_at_2026' => ['nullable', 'integer', 'min:0', 'max:120'],
             'telephone' => ['required', 'string', 'max:20'],

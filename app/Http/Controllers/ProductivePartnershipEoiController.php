@@ -71,7 +71,31 @@ class ProductivePartnershipEoiController extends Controller
     {
         ProductivePartnershipEoi::create($this->validatedSingleEntry($request));
 
-        return redirect()->route('selected-eois.index')->with('status', 'EOI record added successfully.');
+        return redirect()->route('selected-eois.create')->with('eoi_result', [
+            'success' => true,
+            'message' => 'The EOI record was added successfully.',
+        ]);
+    }
+
+    public function editEntry(ProductivePartnershipEoi $eoi): View
+    {
+        $locationColumns = ['province', 'district', 'ds_division', 'gn_division', 'as_centre'];
+        $locationRecords = DB::table('productive_partnership_eois')->select($locationColumns)
+            ->whereNotNull('province')->whereNotNull('district')->whereNotNull('ds_division')
+            ->union(DB::table('tank_registrations')->select($locationColumns)
+                ->whereNotNull('province')->whereNotNull('district')->whereNotNull('ds_division'))->get();
+        return view('productive-partnership-eois.edit', [
+            'eoi' => $eoi,
+            'administrativeDivisions' => config('admin_divisions.provinces', []),
+            'sectors' => YouthWomenApplicantController::BUSINESS_SECTORS,
+            'locationRecords' => $locationRecords,
+        ]);
+    }
+
+    public function updateEntry(Request $request, ProductivePartnershipEoi $eoi): RedirectResponse
+    {
+        $eoi->update($this->validatedSingleEntry($request, $eoi));
+        return redirect()->route('selected-eois.show', [$eoi, 'from' => $request->input('from')])->with('status', 'EOI details updated successfully.');
     }
 
     protected function validatedSingleEntry(Request $request, ?ProductivePartnershipEoi $eoi = null): array
@@ -124,7 +148,24 @@ class ProductivePartnershipEoiController extends Controller
             'district.in' => 'Choose a district belonging to the selected province.',
             'ds_division.in' => 'Choose a DS division belonging to the selected district.',
             'sector.in' => 'Choose a valid sector from the list.',
-            'contact_person_telephone.regex' => 'Enter a valid telephone number with 7–15 digits, optionally using +, spaces, parentheses or hyphens.',
+            'eoi_number.required' => 'Enter the EOI number in the format EOI/PP/YYYY/CALL/NUMBER.',
+            'number_of_members.integer' => 'Enter the number of members as a whole number.',
+            'number_of_members.between' => 'The number of members must be at least 1.',
+            'registration_date.date_format' => 'Enter a valid registration date.',
+            'registration_date.before_or_equal' => 'The registration date cannot be in the future.',
+            'contact_person_email.email' => 'Enter a valid email address.',
+            'province.in' => 'Choose a valid province from the list.',
+            'proposed_total_investment.numeric' => 'Enter the proposed investment as a number.',
+            'proposed_total_investment.decimal' => 'Use no more than two decimal places for the proposed investment.',
+            'proposed_total_investment.gt' => 'The proposed investment must be greater than zero.',
+            'expected_grant_irdcrp.numeric' => 'Enter the expected grant as a number.',
+            'expected_grant_irdcrp.decimal' => 'Use no more than two decimal places for the expected grant.',
+            'expected_grant_irdcrp.min' => 'The expected grant cannot be negative.',
+            'initial_screening_date.date_format' => 'Enter a valid initial screening date.',
+            'initial_screening_date.before_or_equal' => 'The initial screening date cannot be in the future.',
+            'submission_time.date_format' => 'Enter a valid submission date and time.',
+            'submission_time.before_or_equal' => 'The submission date and time cannot be in the future.',
+            'contact_person_telephone.regex' => 'Enter a valid telephone number using 7-15 digits. You may include +, spaces, parentheses or hyphens.',
             'expected_grant_irdcrp.lte' => 'The expected grant cannot exceed the proposed total investment.',
             'eoi_number.unique' => 'This EOI number already exists. Enter a unique EOI number.',
             'eoi_number.regex' => 'Use EOI/PP/YYYY/CALL/NUMBER, for example EOI/PP/2026/1/131. The call number must be greater than zero.',
@@ -136,12 +177,13 @@ class ProductivePartnershipEoiController extends Controller
     public function index(Request $request): View
     {
         $query = $this->filteredQuery($request);
-        $stageQuery = ProductivePartnershipEoi::query();
+        $stageQuery = clone $query;
 
         return view('productive-partnership-eois.index', [
             'eois' => $query->latest()->paginate(15)->withQueryString(),
-            'summary' => $this->summary(),
+            'summary' => $this->summary(clone $stageQuery),
             'periodSummary' => $this->periodSummary($stageQuery),
+            'geographicSummary' => $this->geographicSummary($stageQuery),
             'stageCounts' => ProductivePartnershipEoi::query()
                 ->select('initial_stage', DB::raw('count(*) as total'))
                 ->groupBy('initial_stage')
@@ -173,24 +215,46 @@ class ProductivePartnershipEoiController extends Controller
         $this->applyReviewedInterviewFilters($query, $request);
         $stageQuery = clone $query;
 
+        $sortableColumns = [
+            'eoi_number' => 'eoi_number',
+            'organization_name' => 'organization_name',
+            'contact_person_name' => 'contact_person_name',
+            'province' => 'province',
+            'sector' => 'sector',
+            'interview_marks' => 'interview_marks',
+            'interview_status' => 'interview_status',
+        ];
+        $sort = $request->query('sort');
+        $direction = $request->query('direction') === 'desc' ? 'desc' : 'asc';
+        if (is_string($sort) && isset($sortableColumns[$sort])) {
+            $query->orderBy($sortableColumns[$sort], $direction);
+            if ($sort === 'province') {
+                $query->orderBy('district', $direction);
+            }
+            $query->orderBy('id', $direction);
+        } else {
+            $query->latest();
+        }
+
         return view('productive-partnership-eois.reviewed-interviews', [
-            'eois' => $query->latest()->paginate(15)->withQueryString(),
+            'eois' => $query->paginate(15)->withQueryString(),
             'interviewStatuses' => ProductivePartnershipEoi::INTERVIEW_STATUSES,
             'summary' => [
                 'total' => (clone $stageQuery)->count(),
-                'passed' => (clone $stageQuery)->where('interview_marks', '>', 50)->count(),
-                'not_passed' => (clone $stageQuery)->whereNotNull('interview_marks')->where('interview_marks', '<=', 50)->count(),
+                'passed' => (clone $stageQuery)->whereIn('interview_status', ProductivePartnershipEoi::VERIFICATION_PASS_STATUSES)->count(),
+                'not_passed' => (clone $stageQuery)->whereIn('interview_status', ['ineligible', 'resubmit'])->count(),
             ],
             'interviewStatusCounts' => (clone $stageQuery)
                 ->select('interview_status', DB::raw('count(*) as total'))
                 ->groupBy('interview_status')
                 ->pluck('total', 'interview_status'),
             'nextStepSummary' => [
-                'verification' => (clone $stageQuery)->where('interview_marks', '>', 50)->count(),
-                'not_passed' => (clone $stageQuery)->whereNotNull('interview_marks')->where('interview_marks', '<=', 50)->count(),
-                'pending' => (clone $stageQuery)->whereNull('interview_marks')->count(),
+                'verification' => (clone $stageQuery)->whereIn('interview_status', ProductivePartnershipEoi::VERIFICATION_PASS_STATUSES)->count(),
+                'not_passed' => (clone $stageQuery)->whereIn('interview_status', ['ineligible', 'resubmit'])->count(),
+                'pending' => (clone $stageQuery)->whereNull('interview_status')->count(),
             ],
             'periodSummary' => $this->periodSummary($stageQuery),
+            'geographicSummary' => $this->geographicSummary($stageQuery),
             'administrativeDivisions' => config('admin_divisions.provinces', []),
             'provinces' => array_keys(config('admin_divisions.provinces', [])),
             'eoiYears' => ProductivePartnershipEoi::query()
@@ -204,8 +268,9 @@ class ProductivePartnershipEoiController extends Controller
 
     public function fieldVisits(Request $request): View
     {
-        $query = $this->filteredQuery($request)->where('verification_stage', true);
-        $this->applyInterviewStatusFilter($query, $request);
+        $query = $this->filteredQuery($request)
+            ->where('initial_stage', true)
+            ->whereIn('interview_status', ProductivePartnershipEoi::VERIFICATION_PASS_STATUSES);
 
         if ($status = $request->string('verification_status')->trim()->toString()) {
             $query->where('verification_status', $status);
@@ -222,12 +287,12 @@ class ProductivePartnershipEoiController extends Controller
                 'not_approved' => (clone $stageQuery)->where('verification_status', 'not_approved')->count(),
             ],
             'periodSummary' => $this->periodSummary($stageQuery),
+            'geographicSummary' => $this->geographicSummary($stageQuery),
             'verificationStatuses' => [
                 'pending' => 'Pending',
                 'approved' => 'Approved',
                 'not_approved' => 'Not Approved',
             ],
-            'interviewStatuses' => ProductivePartnershipEoi::INTERVIEW_STATUSES,
             'administrativeDivisions' => config('admin_divisions.provinces', []),
             'provinces' => array_keys(config('admin_divisions.provinces', [])),
             'eoiYears' => ProductivePartnershipEoi::query()
@@ -248,7 +313,7 @@ class ProductivePartnershipEoiController extends Controller
         ]);
 
         $previousInterviewStatus = $eoi->interview_status;
-        $passedInterview = (float) $data['interview_marks'] > 50;
+        $passedInterview = in_array($data['interview_status'], ProductivePartnershipEoi::VERIFICATION_PASS_STATUSES, true);
         $data['verification_stage'] = $passedInterview;
 
         if (($data['interview_status'] ?? null) === 'resubmit' && ! $eoi->interview_resubmitted_at) {
@@ -256,9 +321,11 @@ class ProductivePartnershipEoiController extends Controller
         }
 
         if ($passedInterview) {
-            $data['verification_status'] = $eoi->verification_status === 'approved'
-                ? 'approved'
-                : 'pending';
+            $data['verification_status'] = $eoi->verification_status === 'approved' ? 'approved' : 'pending';
+            if ($data['verification_status'] === 'pending') {
+                $data['approved_at'] = null;
+                $data['verified_at'] = null;
+            }
         } else {
             $data['verification_status'] = 'not_approved';
             $data['approved_at'] = null;
@@ -277,22 +344,18 @@ class ProductivePartnershipEoiController extends Controller
             'changed_at' => now(),
         ]);
 
-        if ($passedInterview) {
-            return redirect()
-                ->route('field-visits.index')
-                ->with('status', 'Interview passed. EOI moved to Selected For Verification Field Visit Pass.');
-        }
-
-        return back()->with('status', 'Interview marks updated successfully.');
+        return back()->with('status', $passedInterview
+            ? 'Interview review saved. EOI progression was updated from the selected review status.'
+            : 'Interview review saved. This status does not advance to Verification Field Visit.');
     }
 
     public function updateVerificationStatus(Request $request, ProductivePartnershipEoi $eoi): RedirectResponse
     {
-        abort_unless($eoi->verification_stage, 404);
+        abort_unless($eoi->initial_stage && $eoi->passesInterviewReview(), 404);
 
         $data = $request->validate([
             'verification_status' => ['required', 'in:approved,not_approved,pending'],
-            'verification_notes' => ['nullable', 'string'],
+            'verification_notes' => ['nullable', 'string', 'max:5000'],
         ]);
 
         $data['approved_at'] = $data['verification_status'] === 'approved' ? ($eoi->approved_at ?? now()) : null;
@@ -300,33 +363,37 @@ class ProductivePartnershipEoiController extends Controller
 
         $eoi->update($data);
 
-        if ($data['verification_status'] === 'approved') {
-            return redirect()
-                ->route('approved-farmer-producer-groups.index')
-                ->with('status', 'Field visit approved. EOI moved to Approved Farmer Producer Groups.');
-        }
-
-        return back()->with('status', 'Verification field visit status updated successfully.');
+        return redirect()->route('field-visits.index', $request->query())
+            ->with('status', 'Verification field visit status updated successfully.');
     }
 
     public function approved(Request $request): View
     {
         $query = $this->filteredQuery($request)->where('verification_status', 'approved');
-        $stageQuery = ProductivePartnershipEoi::query()->where('verification_status', 'approved');
+        $this->applyProposalTrackingFilter($query, $request);
+        $stageQuery = clone $query;
 
         return view('productive-partnership-eois.approved', [
             'eois' => $query->latest('approved_at')->paginate(15)->withQueryString(),
             'summary' => [
                 'total' => (clone $stageQuery)->count(),
-                'documents' => (clone $stageQuery)
-                    ->whereNotNull('business_registration_image')
-                    ->whereNotNull('business_proposal_pdf')
-                    ->count(),
-                'agreement_signed' => (clone $stageQuery)
-                    ->whereNotNull('fop_agreement_tracking->agreement_sign->date')
-                    ->count(),
+                'received_draft' => (clone $stageQuery)->where(function ($query) {
+                    $query->whereNotNull('fop_agreement_tracking->draft_proposal_fop->date')
+                        ->orWhereNotNull('fop_agreement_tracking->pmu_received_draft_fp_from_po->date');
+                })->count(),
+                'isf_completed' => (clone $stageQuery)->whereNotNull('fop_agreement_tracking->pmu_received_fp_from_isf->date')->count(),
+                'iec_completed' => (clone $stageQuery)->where(function ($query) {
+                    $query->whereNotNull('fop_agreement_tracking->iec_evaluation->date')
+                        ->orWhereNotNull('fop_agreement_tracking->pmu_received->date');
+                })->count(),
+                'nsc_completed' => (clone $stageQuery)->whereNotNull('fop_agreement_tracking->nsc_submission->date')->count(),
+                'agreement_signed' => (clone $stageQuery)->whereNotNull('fop_agreement_tracking->agreement_sign->date')->count(),
             ],
             'periodSummary' => $this->periodSummary($stageQuery),
+            'geographicSummary' => $this->geographicSummary($stageQuery),
+            'trackingSteps' => ProductivePartnershipEoi::AGREEMENT_TRACKING_STAGES,
+            'eoiYears' => ProductivePartnershipEoi::query()->whereNotNull('eoi_year')->distinct()->orderByDesc('eoi_year')->pluck('eoi_year'),
+            'eoiCallNumbers' => $this->callNumbersForYear($request),
         ]);
     }
 
@@ -344,16 +411,16 @@ class ProductivePartnershipEoiController extends Controller
         abort_unless($eoi->verification_status === 'approved', 404);
 
         $data = $request->validate([
-            'pre_construction_date' => ['nullable', 'date'],
-            'pre_construction_notes' => ['nullable', 'string'],
+            'pre_construction_date' => ['nullable', 'date_format:Y-m-d', 'before_or_equal:today'],
+            'pre_construction_notes' => ['nullable', 'string', 'max:5000'],
             'pre_construction_images' => ['array'],
             'pre_construction_images.*' => ['image', 'max:5120'],
-            'during_construction_date' => ['nullable', 'date'],
-            'during_construction_notes' => ['nullable', 'string'],
+            'during_construction_date' => ['nullable', 'date_format:Y-m-d', 'before_or_equal:today'],
+            'during_construction_notes' => ['nullable', 'string', 'max:5000'],
             'during_construction_images' => ['array'],
             'during_construction_images.*' => ['image', 'max:5120'],
-            'post_construction_date' => ['nullable', 'date'],
-            'post_construction_notes' => ['nullable', 'string'],
+            'post_construction_date' => ['nullable', 'date_format:Y-m-d', 'before_or_equal:today'],
+            'post_construction_notes' => ['nullable', 'string', 'max:5000'],
             'post_construction_images' => ['array'],
             'post_construction_images.*' => ['image', 'max:5120'],
             'business_registration_image' => ['nullable', 'image', 'max:5120'],
@@ -388,7 +455,7 @@ class ProductivePartnershipEoiController extends Controller
 
         $request->validate([
             'fop_agreement_tracking' => ['array'],
-            'fop_agreement_tracking.*.date' => ['nullable', 'date'],
+            'fop_agreement_tracking.*.date' => ['nullable', 'date_format:Y-m-d', 'before_or_equal:today'],
             'fop_agreement_tracking.*.value' => ['nullable', 'string', 'max:255'],
         ]);
 
@@ -413,49 +480,17 @@ class ProductivePartnershipEoiController extends Controller
             'fop_agreement_tracking' => $tracking ?: null,
         ]);
 
-        return back()->with('status', 'FOP agreement tracking updated successfully.');
-    }
-
-    public function fullProposals(Request $request): View
-    {
-        $query = ProductivePartnershipEoi::query()->where('verification_status', 'approved');
-        $stageQuery = ProductivePartnershipEoi::query()->where('verification_status', 'approved');
-
-        if ($search = $request->string('search')->trim()->toString()) {
-            $query->where(function ($builder) use ($search) {
-                $builder
-                    ->where('eoi_number', 'like', "%{$search}%")
-                    ->orWhere('organization_name', 'like', "%{$search}%")
-                    ->orWhere('business_proposal_title', 'like', "%{$search}%")
-                    ->orWhere('contact_person_name', 'like', "%{$search}%");
-            });
-        }
-
-        if ($status = $request->string('full_proposal_status')->trim()->toString()) {
-            $query->where('full_proposal_status', $status);
-        }
-
-        return view('productive-partnership-eois.full-proposals', [
-            'eois' => $query->latest('approved_at')->paginate(15)->withQueryString(),
-            'summary' => [
-                'total' => (clone $stageQuery)->count(),
-                'pending' => (clone $stageQuery)->where('full_proposal_status', 'pending')->count(),
-                'approved' => (clone $stageQuery)->where('full_proposal_status', 'approved')->count(),
-                'rejected' => (clone $stageQuery)->where('full_proposal_status', 'rejected')->count(),
-            ],
-            'periodSummary' => $this->periodSummary($stageQuery),
-            'statuses' => ['pending' => 'Pending', 'approved' => 'Approved', 'rejected' => 'Rejected'],
-        ]);
+        return redirect()->route('approved-farmer-producer-groups.index', $request->query())
+            ->with('status', 'Proposal tracking updated successfully.');
     }
 
     public function agreementSignFop(Request $request): View
     {
-        $query = ProductivePartnershipEoi::query()
+        $query = $this->filteredQuery($request)
             ->where('verification_status', 'approved')
-            ->where('full_proposal_status', 'approved');
-        $stageQuery = ProductivePartnershipEoi::query()
-            ->where('verification_status', 'approved')
-            ->where('full_proposal_status', 'approved');
+            ->whereNotNull('fop_agreement_tracking->agreement_sign->date');
+        $this->applyPaymentStatusFilter($query, $request);
+        $stageQuery = clone $query;
 
         if ($search = $request->string('search')->trim()->toString()) {
             $query->where(function ($builder) use ($search) {
@@ -469,44 +504,35 @@ class ProductivePartnershipEoiController extends Controller
 
         return view('productive-partnership-eois.agreement-sign-fop', [
             'eois' => $query->latest('full_proposal_reviewed_at')->paginate(15)->withQueryString(),
-            'summary' => [
-                'total' => (clone $stageQuery)->count(),
-                'documents' => (clone $stageQuery)
-                    ->whereNotNull('business_registration_image')
-                    ->whereNotNull('business_proposal_pdf')
-                    ->count(),
-                'pending_documents' => (clone $stageQuery)
-                    ->where(function ($builder) {
-                        $builder
-                            ->whereNull('business_registration_image')
-                            ->orWhereNull('business_proposal_pdf');
-                    })
-                    ->count(),
-            ],
+            'summary' => ['total' => (clone $stageQuery)->count(), ...$this->financialTotals(clone $stageQuery)],
             'periodSummary' => $this->periodSummary($stageQuery),
+            'geographicSummary' => $this->geographicSummary($stageQuery),
+            'provinces' => array_keys(config('admin_divisions.provinces', [])),
+            'administrativeDivisions' => config('admin_divisions.provinces', []),
+            'eoiYears' => ProductivePartnershipEoi::query()->whereNotNull('eoi_year')->distinct()->orderByDesc('eoi_year')->pluck('eoi_year'),
+            'eoiCallNumbers' => $this->callNumbersForYear($request),
         ]);
     }
 
     public function updateAgreementEoiData(Request $request, ProductivePartnershipEoi $eoi): RedirectResponse
     {
-        abort_unless($eoi->verification_status === 'approved' && $eoi->full_proposal_status === 'approved', 403);
+        abort_unless($eoi->verification_status === 'approved' && filled(data_get($eoi->fop_agreement_tracking, 'agreement_sign.date')), 403);
         $rules = [
-            'agreement_sign_date' => ['required', 'date_format:Y-m-d'],
-            'full_proposal' => ['nullable', 'file', 'mimes:pdf', 'max:10240'],
-            'attachments' => ['nullable', 'array', 'max:10'],
-            'attachments.*' => ['file', 'mimes:pdf,jpg,jpeg,png,doc,docx,xls,xlsx', 'max:10240'],
+            'agreement_sign_date' => ['nullable', 'date_format:Y-m-d', 'before_or_equal:today'],
         ];
         foreach (['investment', 'tr1', 'tr2', 'tr3', 'revised'] as $stage) {
             if ($stage !== 'investment') {
-                $rules["{$stage}.date"] = ['nullable', 'date_format:Y-m-d', "required_with:{$stage}.own,{$stage}.loan,{$stage}.grant"];
+                $rules["{$stage}.date"] = ['nullable', 'date_format:Y-m-d', 'before_or_equal:today', "required_with:{$stage}.own,{$stage}.loan,{$stage}.grant"];
             }
             foreach (['own', 'loan', 'grant'] as $source) {
-                $rules["{$stage}.{$source}"] = [$stage === 'investment' ? 'required' : 'nullable', 'numeric', 'min:0', 'max:999999999999.99', 'decimal:0,2'];
+                $rules["{$stage}.{$source}"] = [$stage === 'investment' ? 'required' : 'nullable', 'numeric', 'regex:/^\d+(?:\.\d{1,2})?$/', 'min:0', 'max:999999999999.99', 'decimal:0,2'];
             }
         }
-        $validated = $request->validateWithBag('agreementData', $rules);
+        $validated = $request->validateWithBag('agreementData', $rules, [
+            '*.regex' => 'Enter a valid amount with no more than two decimal places.',
+        ]);
         $data = $eoi->agreement_eoi_data ?? [];
-        $data['agreement_sign_date'] = $validated['agreement_sign_date'];
+        $data['agreement_sign_date'] = $validated['agreement_sign_date'] ?? ($data['agreement_sign_date'] ?? null);
         foreach (['investment', 'tr1', 'tr2', 'tr3', 'revised'] as $stage) {
             $data[$stage] = $validated[$stage] ?? [];
             $cents = 0;
@@ -515,29 +541,14 @@ class ProductivePartnershipEoiController extends Controller
             }
             $data[$stage]['total'] = number_format($cents / 100, 2, '.', '');
         }
-        $stored = [];
-        try {
-            if ($request->hasFile('full_proposal')) {
-                $file = $request->file('full_proposal');
-                $stored[] = $path = $file->store("agreement-eois/{$eoi->id}", 'local');
-                $data['full_proposal'] = ['path' => $path, 'name' => $file->getClientOriginalName()];
-            }
-            foreach ($request->file('attachments', []) as $file) {
-                $stored[] = $path = $file->store("agreement-eois/{$eoi->id}", 'local');
-                $data['attachments'][] = ['path' => $path, 'name' => $file->getClientOriginalName()];
-            }
-            $eoi->update(['agreement_eoi_data' => $data]);
-        } catch (\Throwable $exception) {
-            Storage::disk('local')->delete($stored);
-            throw $exception;
-        }
+        $eoi->update(['agreement_eoi_data' => $data]);
 
-        return back()->with('status', 'EOI agreement data saved successfully.');
+        return back()->with('status', 'Financial data updated successfully.');
     }
 
     public function downloadAgreementDocument(ProductivePartnershipEoi $eoi, string $document)
     {
-        abort_unless($eoi->verification_status === 'approved' && $eoi->full_proposal_status === 'approved', 403);
+        abort_unless($eoi->verification_status === 'approved' && filled(data_get($eoi->fop_agreement_tracking, 'agreement_sign.date')), 403);
         $data = $eoi->agreement_eoi_data ?? [];
         $file = $document === 'proposal' ? ($data['full_proposal'] ?? null) : ($data['attachments'][$document] ?? null);
         abort_unless($file && Storage::disk('local')->exists($file['path']), 404);
@@ -545,25 +556,11 @@ class ProductivePartnershipEoiController extends Controller
         return Storage::disk('local')->download($file['path'], $file['name']);
     }
 
-    public function updateFullProposalStatus(Request $request, ProductivePartnershipEoi $eoi): RedirectResponse
-    {
-        abort_unless($eoi->verification_status === 'approved', 404);
-
-        $data = $request->validate([
-            'full_proposal_status' => ['required', 'in:approved,rejected,pending'],
-            'full_proposal_notes' => ['nullable', 'string'],
-        ]);
-
-        $data['full_proposal_reviewed_at'] = $data['full_proposal_status'] === 'pending' ? null : now();
-
-        $eoi->update($data);
-
-        return back()->with('status', 'Full proposal status updated successfully.');
-    }
-
     public function show(ProductivePartnershipEoi $eoi): View
     {
-        $eoi->load(['interviewHistories.changedBy']);
+        if (auth()->user()?->role === 'super_admin') {
+            $eoi->load(['interviewHistories.changedBy']);
+        }
 
         return view('productive-partnership-eois.show', [
             'eoi' => $eoi,
@@ -631,9 +628,14 @@ class ProductivePartnershipEoiController extends Controller
             $existing ? $updated++ : $imported++;
         }
 
+        $saved = $imported + $updated;
+
         return redirect()
-            ->route('selected-eois.index')
-            ->with('status', "EOI import completed. {$imported} new, {$updated} updated, {$skipped} skipped.");
+            ->route('selected-eois.create')
+            ->with('eoi_result', [
+                'success' => $saved > 0,
+                'message' => "Import finished: {$imported} added, {$updated} updated, {$skipped} skipped.",
+            ]);
     }
 
     public function updateInitialStage(Request $request, ProductivePartnershipEoi $eoi): RedirectResponse
@@ -755,6 +757,22 @@ class ProductivePartnershipEoiController extends Controller
             $query->where('initial_stage', $request->boolean('initial_stage'));
         }
 
+        $sortable = ['eoi_number', 'organization_name', 'province', 'district', 'sector', 'proposed_total_investment', 'expected_grant_irdcrp', 'initial_stage', 'number_of_members', 'contact_person_name', 'contact_person_telephone', 'business_proposal_title', 'initial_desk_review_status', 'interview_marks', 'interview_status', 'verification_status', 'verification_stage', 'approved_at', 'full_proposal_reviewed_at'];
+        $sort = $request->string('sort')->toString();
+        $direction = $request->string('direction')->toString() === 'desc' ? 'desc' : 'asc';
+        if ($sort === 'agreement_signed_date') {
+            $query->orderBy('fop_agreement_tracking->agreement_sign->date', $direction);
+        } elseif ($sort === 'payment_status') {
+            $query->orderByRaw("CASE WHEN JSON_EXTRACT(agreement_eoi_data, '$.tr3.date') IS NOT NULL THEN 3 WHEN JSON_EXTRACT(agreement_eoi_data, '$.tr2.date') IS NOT NULL THEN 2 WHEN JSON_EXTRACT(agreement_eoi_data, '$.tr1.date') IS NOT NULL THEN 1 ELSE 0 END {$direction}");
+        } elseif ($sort === 'proposal_tracking') {
+            $query->orderByRaw("CASE WHEN JSON_EXTRACT(fop_agreement_tracking, '$.agreement_sign.date') IS NOT NULL THEN 7 WHEN JSON_EXTRACT(fop_agreement_tracking, '$.nsc_submission.date') IS NOT NULL THEN 6 WHEN JSON_EXTRACT(fop_agreement_tracking, '$.iec_evaluation.date') IS NOT NULL OR JSON_EXTRACT(fop_agreement_tracking, '$.pmu_received.date') IS NOT NULL THEN 5 WHEN JSON_EXTRACT(fop_agreement_tracking, '$.handed_over_iec.date') IS NOT NULL THEN 4 WHEN JSON_EXTRACT(fop_agreement_tracking, '$.pmu_received_fp_from_isf.date') IS NOT NULL THEN 3 WHEN JSON_EXTRACT(fop_agreement_tracking, '$.fp_handed_over_to_isf.date') IS NOT NULL THEN 2 WHEN JSON_EXTRACT(fop_agreement_tracking, '$.draft_proposal_fop.date') IS NOT NULL OR JSON_EXTRACT(fop_agreement_tracking, '$.pmu_received_draft_fp_from_po.date') IS NOT NULL THEN 1 ELSE 0 END {$direction}");
+        } elseif (in_array($sort, $sortable, true)) {
+            $query->orderBy($sort, $direction);
+            if ($sort === 'province') {
+                $query->orderBy('district', $direction);
+            }
+        }
+
         return $query;
     }
 
@@ -763,9 +781,9 @@ class ProductivePartnershipEoiController extends Controller
         $this->applyInterviewStatusFilter($query, $request);
 
         match ($request->string('next_step')->trim()->toString()) {
-            'verification' => $query->where('interview_marks', '>', 50),
-            'not_passed' => $query->whereNotNull('interview_marks')->where('interview_marks', '<=', 50),
-            'pending' => $query->whereNull('interview_marks'),
+            'verification' => $query->whereIn('interview_status', ProductivePartnershipEoi::VERIFICATION_PASS_STATUSES),
+            'not_passed' => $query->whereIn('interview_status', ['ineligible', 'resubmit']),
+            'pending' => $query->whereNull('interview_status'),
             default => null,
         };
     }
@@ -790,13 +808,66 @@ class ProductivePartnershipEoiController extends Controller
             ->pluck('eoi_call_number');
     }
 
-    private function summary(): array
+    private function summary($query): array
     {
         return [
-            'total' => ProductivePartnershipEoi::count(),
-            'initial_yes' => ProductivePartnershipEoi::where('initial_stage', true)->count(),
-            'initial_no' => ProductivePartnershipEoi::where('initial_stage', false)->count(),
+            'total' => (clone $query)->count(),
+            'initial_yes' => (clone $query)->where('initial_stage', true)->count(),
+            'initial_no' => (clone $query)->where('initial_stage', false)->count(),
         ];
+    }
+
+    private function applyPaymentStatusFilter($query, Request $request): void
+    {
+        $status = $request->string('payment_status')->toString();
+        if ($status === 'awaiting_tranche_1') {
+            $query->whereNull('agreement_eoi_data->tr1->date');
+        } elseif (in_array($status, ['tranche_1_completed', 'tranche_2_completed', 'tranche_3_completed'], true)) {
+            $through = ['tranche_1_completed' => 1, 'tranche_2_completed' => 2, 'tranche_3_completed' => 3][$status];
+            for ($index = 1; $index <= $through; $index++) {
+                $query->whereNotNull("agreement_eoi_data->tr{$index}->date");
+            }
+            if ($through < 3) {
+                $query->whereNull("agreement_eoi_data->tr".($through + 1)."->date");
+            }
+        }
+    }
+
+    private function applyProposalTrackingFilter($query, Request $request): void
+    {
+        $step = $request->string('proposal_status')->toString();
+        if (array_key_exists($step, ProductivePartnershipEoi::AGREEMENT_TRACKING_STAGES)) {
+            if ($step === 'draft_proposal_fop') {
+                $query->where(function ($builder) {
+                    $builder->whereNotNull('fop_agreement_tracking->draft_proposal_fop->date')
+                        ->orWhereNotNull('fop_agreement_tracking->pmu_received_draft_fp_from_po->date');
+                });
+
+                return;
+            }
+
+            if ($step === 'iec_evaluation') {
+                $query->where(function ($builder) {
+                    $builder->whereNotNull('fop_agreement_tracking->iec_evaluation->date')
+                        ->orWhereNotNull('fop_agreement_tracking->pmu_received->date');
+                });
+
+                return;
+            }
+
+            $query->whereNotNull("fop_agreement_tracking->{$step}->date");
+        }
+    }
+
+    private function financialTotals($query): array
+    {
+        $rows = $query->get(['agreement_eoi_data']);
+        $total = ['investment' => 0.0, 'own' => 0.0, 'loan' => 0.0, 'grant' => 0.0];
+        foreach ($rows as $row) {
+            $total['investment'] += (float) data_get($row->agreement_eoi_data, 'investment.total', 0);
+            foreach (['own', 'loan', 'grant'] as $field) $total[$field] += (float) data_get($row->agreement_eoi_data, "investment.{$field}", 0);
+        }
+        return ['financials' => $total];
     }
 
     private function periodSummary($query): array
@@ -816,6 +887,12 @@ class ProductivePartnershipEoiController extends Controller
                 ->orderBy('eoi_call_number')
                 ->get(),
         ];
+    }
+
+    private function geographicSummary($query): array
+    {
+        $group = fn (string $field) => (clone $query)->select($field.' as name', DB::raw('count(*) as total'))->whereNotNull($field)->where($field, '<>', '')->groupBy($field)->orderByDesc('total')->get();
+        return ['provinces' => $group('province'), 'districts' => $group('district'), 'sectors' => $group('sector')];
     }
 
     private function provinceCounts()

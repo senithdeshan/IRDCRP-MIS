@@ -7,8 +7,8 @@
                 <p class="mt-1 text-sm text-slate-500">{{ $eoi->organization_name ?: 'EOI full record' }}</p>
             </div>
             <div class="flex flex-wrap gap-2">
-                <button type="button" x-data @click="$dispatch('open-modal', 'eoi-data-view-{{ $eoi->id }}')" class="rounded-md bg-emerald-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-800">EOI Data View Details</button>
-                <a href="{{ route('selected-eois.index') }}" class="rounded-md border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">Back</a>
+                <a href="{{ route('selected-eois.edit', [$eoi, 'from' => request('from', route('selected-eois.index'))]) }}" class="rounded-md bg-emerald-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-800">Edit</a>
+                <a href="{{ request('from', route('selected-eois.index')) }}" class="rounded-md border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">Back</a>
                 <form method="POST" action="{{ route('selected-eois.destroy', $eoi) }}" data-confirm-title="Delete this EOI record?" data-confirm-message="This action cannot be undone." data-confirm-action="Delete" data-confirm-tone="rose">
                     @csrf
                     @method('DELETE')
@@ -20,23 +20,29 @@
 
     <section class="px-4 py-6 sm:px-6 lg:px-8">
         <div class="mx-auto max-w-7xl space-y-5">
-            <div class="grid gap-4 md:grid-cols-4">
+            @php
+                $agreementData = $eoi->agreement_eoi_data ?? [];
+                $agreementDate = data_get($eoi->fop_agreement_tracking, 'agreement_sign.date');
+                $currentTrackingStage = $eoi->currentAgreementTrackingStage();
+                $completedTrackingStages = $eoi->agreementTrackingCompletedCount();
+                $totalTrackingStages = count($eoi->agreementTrackingRows());
+                $currentStageLabel = $agreementDate ? 'Agreement Signed' : ($eoi->verification_status === 'approved' ? 'Selected for Proposal Preparation' : ($eoi->passesInterviewReview() ? 'Selected for Verification Field Visit' : ($eoi->initial_stage ? 'Selected for Review Interview' : 'EOI Received')));
+                $tranche1Complete = filled(data_get($agreementData, 'tr1.date'));
+                $tranche2Complete = $tranche1Complete && filled(data_get($agreementData, 'tr2.date'));
+                $tranche3Complete = $tranche2Complete && filled(data_get($agreementData, 'tr3.date'));
+                $paymentLabel = $tranche3Complete ? 'Tranche 3 Completed' : ($tranche2Complete ? 'Tranche 2 Completed' : ($tranche1Complete ? 'Tranche 1 Completed' : 'Awaiting Tranche 1'));
+                $financialProgressLabel = $tranche3Complete ? 'Completed' : (($tranche1Complete || $tranche2Complete) ? 'In Progress' : 'Not Started');
+            @endphp
+            <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 <div class="metric-tile p-5">
-                    <p class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Initial Stage</p>
-                    <p class="mt-3 text-2xl font-semibold {{ $eoi->initial_stage ? 'text-emerald-700' : 'text-rose-700' }}">{{ $eoi->initial_stage ? 'Yes' : 'No' }}</p>
+                    <p class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Current Stage</p>
+                    <p class="mt-3 text-lg font-semibold text-slate-950">{{ $currentStageLabel }}</p>
                 </div>
-                <div class="metric-tile p-5">
-                    <p class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Members</p>
-                    <p class="mt-3 text-2xl font-semibold text-slate-950">{{ $eoi->number_of_members ?: 'N/A' }}</p>
-                </div>
-                <div class="metric-tile p-5">
-                    <p class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Investment Rs.</p>
-                    <p class="mt-3 text-xl font-semibold text-slate-950">{{ number_format((float) $eoi->proposed_total_investment, 2) }}</p>
-                </div>
-                <div class="metric-tile p-5">
-                    <p class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Grant Rs.</p>
-                    <p class="mt-3 text-xl font-semibold text-slate-950">{{ number_format((float) $eoi->expected_grant_irdcrp, 2) }}</p>
-                </div>
+                @if ($agreementDate)
+                    <div class="metric-tile p-5"><p class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Investment Details</p><p class="mt-3 text-sm font-semibold text-slate-950">Total Rs. {{ number_format((float) data_get($agreementData, 'investment.total', 0), 2) }}</p><p class="mt-1 text-xs text-slate-600">Own {{ number_format((float) data_get($agreementData, 'investment.own', 0), 2) }} · Loan {{ number_format((float) data_get($agreementData, 'investment.loan', 0), 2) }} · Grant {{ number_format((float) data_get($agreementData, 'investment.grant', 0), 2) }}</p></div>
+                    <div class="metric-tile p-5"><p class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Payment Status</p><p class="mt-3 text-lg font-semibold text-slate-950">{{ $paymentLabel }}</p></div>
+                    <div class="metric-tile p-5"><p class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Financial Progress</p><p class="mt-3 text-lg font-semibold text-emerald-700">{{ $financialProgressLabel }}</p></div>
+                @endif
             </div>
 
             @php
@@ -76,24 +82,11 @@
                         'Status after Initial Desk Review' => $eoi->initial_desk_review_status,
                         'Date of Initial Screening' => optional($eoi->initial_screening_date)->format('Y-m-d'),
                         'Initial Stage' => $eoi->initial_stage ? 'Yes' : 'No',
-                        'Interview Marks' => filled($eoi->interview_marks) ? number_format((float) $eoi->interview_marks, 2) : null,
-                        'Interview Status' => $eoi->interview_status_label,
-                        'Resubmitted Before' => $eoi->was_resubmitted_for_interview ? optional($eoi->interview_resubmitted_at)->format('Y-m-d H:i:s') : null,
-                        'Interview Notes' => $eoi->interview_notes,
                     ],
-                    'Full Proposal Preparation' => [
-                        'Full Proposal Status' => ucfirst($eoi->full_proposal_status ?? 'pending'),
-                        'Full Proposal Notes' => $eoi->full_proposal_notes,
-                        'Reviewed At' => optional($eoi->full_proposal_reviewed_at)->format('Y-m-d H:i:s'),
-                    ],
-                    'Kobo Metadata' => [
-                        '_id' => $eoi->kobo_id,
-                        '_uuid' => $eoi->kobo_uuid,
-                        '_submission_time' => optional($eoi->submission_time)->format('Y-m-d H:i:s'),
-                        '_validation_status' => $eoi->validation_status,
-                        '_notes' => $eoi->notes,
-                        '_status' => $eoi->status,
-                    ],
+                    'Review Interview' => ['Marks' => filled($eoi->interview_marks) ? number_format((float) $eoi->interview_marks, 2) : 'Pending', 'Status' => $eoi->interview_status_label],
+                    'Verification Field Visit' => ['Note' => $eoi->verification_notes, 'Status' => $eoi->verification_status === 'approved' ? 'Selected' : ($eoi->verification_status === 'not_approved' ? 'Not Selected' : 'Pending')],
+                    'Proposal Preparation' => ['Current Step' => $currentTrackingStage['label'], 'Date' => $currentTrackingStage['date'], 'Step Number' => $completedTrackingStages.' / '.$totalTrackingStages, 'Progress' => $eoi->agreementTrackingProgressPercent().'%'],
+                    'Agreement' => ['Agreement Signed Date' => $agreementDate],
                 ];
             @endphp
 
@@ -123,7 +116,7 @@
             <div class="panel-surface p-6">
                 <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div>
-                        <h2 class="text-base font-semibold text-slate-950">FOP Agreement Path</h2>
+                        <h2 class="text-base font-semibold text-slate-950">Draft Proposal to Agreement Signing Path</h2>
                         <p class="mt-1 text-sm text-slate-500">Draft proposal to agreement signing progress for this record.</p>
                     </div>
                     <span class="w-fit rounded-full bg-cyan-100 px-3 py-1 text-xs font-semibold text-cyan-800">{{ $completedTrackingStages }} / {{ $totalTrackingStages }} completed</span>
@@ -162,67 +155,13 @@
                 </div>
             </div>
 
-            <div class="panel-surface p-6">
+<div class="panel-surface p-6">
                 <div class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <h2 class="text-base font-semibold text-slate-950">Interview Change History</h2>
-                        <p class="mt-1 text-sm text-slate-500">Every saved interview status change for this EOI.</p>
-                    </div>
-                    @if ($eoi->was_resubmitted_for_interview)
-                        <span class="w-fit rounded-full bg-sky-100 px-3 py-1 text-xs font-semibold text-sky-700">Resubmitted before</span>
-                    @endif
-                </div>
-
-                @if ($eoi->interviewHistories->isNotEmpty())
-                    <div class="mt-5 overflow-hidden rounded-md border border-slate-200">
-                        <table class="min-w-full divide-y divide-slate-200">
-                            <thead class="bg-slate-50">
-                                <tr>
-                                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Changed At</th>
-                                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Change</th>
-                                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Marks</th>
-                                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Notes</th>
-                                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Admin</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-slate-100 bg-white">
-                                @foreach ($eoi->interviewHistories as $history)
-                                    <tr>
-                                        <td class="px-4 py-3 text-sm text-slate-600">{{ optional($history->changed_at)->format('Y-m-d H:i') }}</td>
-                                        <td class="px-4 py-3">
-                                            <div class="flex flex-wrap items-center gap-2 text-xs font-semibold">
-                                                <span class="rounded-full bg-slate-100 px-3 py-1 text-slate-600">{{ $history->from_interview_status_label ?: 'No previous status' }}</span>
-                                                <span class="text-slate-400">to</span>
-                                                <span @class([
-                                                    'rounded-full px-3 py-1',
-                                                    'bg-emerald-100 text-emerald-800' => $history->to_interview_status === 'likely_mature',
-                                                    'bg-amber-100 text-amber-800' => in_array($history->to_interview_status, ['likely_immature', 'likely_immature_possible_to_improve', 'resubmit'], true),
-                                                    'bg-rose-100 text-rose-800' => $history->to_interview_status === 'ineligible',
-                                                ])>{{ $history->to_interview_status_label ?: $history->to_interview_status }}</span>
-                                            </div>
-                                        </td>
-                                        <td class="px-4 py-3 text-sm font-semibold text-slate-800">{{ filled($history->interview_marks) ? number_format((float) $history->interview_marks, 2) : 'N/A' }}</td>
-                                        <td class="px-4 py-3 text-sm leading-6 text-slate-600">{{ $history->interview_notes ?: 'N/A' }}</td>
-                                        <td class="px-4 py-3 text-sm text-slate-600">{{ $history->changedBy?->name ?: 'System' }}</td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                @else
-                    <div class="mt-5 rounded-md border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-500">
-                        No interview status changes saved yet.
-                    </div>
-                @endif
-            </div>
-
-            <div class="panel-surface p-6">
-                <div class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                        <h2 class="text-base font-semibold text-slate-950">Uploaded Construction Photos & Documents</h2>
+                        <h2 class="text-base font-semibold text-slate-950">Photos & Documentations</h2>
                         <p class="mt-1 text-sm text-slate-500">Pre, during, and post construction uploads with BR and proposal documents.</p>
                     </div>
-                    @if ((float) $eoi->interview_marks > 50)
+                    @if ($eoi->verification_status === 'approved')
                         <a href="{{ route('approved-farmer-producer-groups.edit', $eoi) }}" class="w-fit rounded-md bg-slate-950 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800">Update Uploads</a>
                     @endif
                 </div>
@@ -312,6 +251,88 @@
                 </div>
             </div>
         </div>
-        @include('productive-partnership-eois.partials.agreement-eoi-data-view')
-    </section>
+        @if ($agreementDate)
+            <section class="panel-surface p-6">
+                <h2 class="text-base font-semibold text-slate-950">Financial Information</h2>
+                <p class="mt-1 text-sm text-slate-500">Full investment, tranche amounts, completion dates, and recorded progress.</p>
+                <div class="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+                    @foreach (['investment' => 'Total Investment', 'tr1' => 'Tranche 1', 'tr2' => 'Tranche 2', 'tr3' => 'Tranche 3', 'revised' => 'Revised Investment'] as $stage => $label)
+                        @php($entry = data_get($agreementData, $stage, []))
+                        <div class="rounded-lg border border-slate-200 p-4">
+                            <div class="flex items-start justify-between gap-2">
+                                <h3 class="text-sm font-semibold text-slate-900">{{ $label }}</h3>
+                                @if (in_array($stage, ['tr1', 'tr2', 'tr3'], true))
+                                    @php($trancheComplete = filled($entry['date'] ?? null))
+                                    <span @class(['rounded-full px-2 py-1 text-[0.65rem] font-semibold', 'bg-emerald-100 text-emerald-800' => $trancheComplete, 'bg-slate-100 text-slate-600' => !$trancheComplete])>{{ $trancheComplete ? 'Completed' : 'Pending' }}</span>
+                                @endif
+                            </div>
+                            <p class="mt-2 text-xs text-slate-500">{{ $stage === 'investment' ? $agreementDate : ($entry['date'] ?? 'Date pending') }}</p>
+                            @foreach (['own' => 'Own', 'loan' => 'Loan', 'grant' => 'Grant'] as $source => $sourceLabel)
+                                <p class="mt-1 text-xs text-slate-600">{{ $sourceLabel }}: Rs. {{ number_format((float) ($entry[$source] ?? 0), 2) }}</p>
+                            @endforeach
+                            <p class="mt-2 text-sm font-semibold text-slate-900">Total: Rs. {{ number_format((float) ($entry['total'] ?? 0), 2) }}</p>
+                            <x-agreement-progress :stage="$stage" :data="$agreementData" />
+                        </div>
+                    @endforeach
+                </div>
+            </section>
+        @endif
+                @if (auth()->user()?->role === 'super_admin')
+            <div class="panel-surface p-6">
+                <div class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <h2 class="text-base font-semibold text-slate-950">Change History</h2>
+                        <p class="mt-1 text-sm text-slate-500">Every saved interview status change for this EOI.</p>
+                    </div>
+                    @if ($eoi->was_resubmitted_for_interview)
+                        <span class="w-fit rounded-full bg-sky-100 px-3 py-1 text-xs font-semibold text-sky-700">Resubmitted before</span>
+                    @endif
+                </div>
+
+                @if ($eoi->interviewHistories->isNotEmpty())
+                    <div class="mt-5 overflow-hidden rounded-md border border-slate-200">
+                        <table class="min-w-full divide-y divide-slate-200">
+                            <thead class="bg-slate-50">
+                                <tr>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Changed At</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Change</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Marks</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Notes</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Admin</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100 bg-white">
+                                @foreach ($eoi->interviewHistories as $history)
+                                    <tr>
+                                        <td class="px-4 py-3 text-sm text-slate-600">{{ optional($history->changed_at)->format('Y-m-d H:i') }}</td>
+                                        <td class="px-4 py-3">
+                                            <div class="flex flex-wrap items-center gap-2 text-xs font-semibold">
+                                                <span class="rounded-full bg-slate-100 px-3 py-1 text-slate-600">{{ $history->from_interview_status_label ?: 'No previous status' }}</span>
+                                                <span class="text-slate-400">to</span>
+                                                <span @class([
+                                                    'rounded-full px-3 py-1',
+                                                    'bg-emerald-100 text-emerald-800' => $history->to_interview_status === 'likely_mature',
+                                                    'bg-amber-100 text-amber-800' => in_array($history->to_interview_status, ['likely_immature', 'likely_immature_possible_to_improve', 'resubmit'], true),
+                                                    'bg-rose-100 text-rose-800' => $history->to_interview_status === 'ineligible',
+                                                ])>{{ $history->to_interview_status_label ?: $history->to_interview_status }}</span>
+                                            </div>
+                                        </td>
+                                        <td class="px-4 py-3 text-sm font-semibold text-slate-800">{{ filled($history->interview_marks) ? number_format((float) $history->interview_marks, 2) : 'N/A' }}</td>
+                                        <td class="px-4 py-3 text-sm leading-6 text-slate-600">{{ $history->interview_notes ?: 'N/A' }}</td>
+                                        <td class="px-4 py-3 text-sm text-slate-600">{{ $history->changedBy?->name ?: 'System' }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @else
+                    <div class="mt-5 rounded-md border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-500">
+                        No interview status changes saved yet.
+                    </div>
+                @endif
+            </div>
+            @endif
+
+
+</section>
 </x-app-layout>

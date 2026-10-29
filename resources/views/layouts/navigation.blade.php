@@ -3,30 +3,18 @@
         ['label' => 'Dashboard', 'route' => 'dashboard', 'active' => 'dashboard', 'accent' => '#0f766e', 'icon' => 'dashboard', 'section' => 'Workspace'],
         ['label' => 'STAFF PROFILE IRDCRP', 'route' => 'staff-profiles.index', 'active' => 'staff-profiles.*', 'accent' => '#2563eb', 'icon' => 'staff', 'section' => 'Workspace'],
         [
-            'label' => 'Component 1.2',
-            'caption' => 'Productive Partnership',
+            'label' => 'Component 1.2 – Productive Partnership',
             'route' => 'productive-partnership.index',
-            'active' => ['productive-partnership.*', 'farmer-organizations.*', 'selected-eois.*', 'reviewed-interviews.*', 'field-visits.*', 'approved-farmer-producer-groups.*', 'full-proposals.*', 'agreement-sign-fop.*'],
+            'active' => ['productive-partnership.*', 'farmer-organizations.*', 'selected-eois.*', 'reviewed-interviews.*', 'field-visits.*', 'approved-farmer-producer-groups.*', 'agreement-sign-fop.*'],
             'accent' => '#d97706',
             'icon' => 'partnership',
-            'section' => 'IRDCRP modules',
+            'section' => 'Component 1',
             'children' => [
-                [
-                    'label' => 'Farmer Organization Information',
-                    'route' => 'farmer-organizations.index',
-                    'active' => ['farmer-organizations.*', 'selected-eois.*', 'reviewed-interviews.*', 'field-visits.*', 'approved-farmer-producer-groups.*', 'full-proposals.*', 'agreement-sign-fop.*'],
-                    'children' => [
-                        ['label' => 'Received All EOI', 'route' => 'selected-eois.index', 'active' => 'selected-eois.*'],
-                        ['label' => 'Farmer Group Information', 'route' => 'farmer-organizations.records', 'active' => 'farmer-organizations.records', 'active_params' => ['initial_screening_result' => null]],
-                        ['label' => 'Selected Farmer Groups', 'route' => 'farmer-organizations.records', 'params' => ['initial_screening_result' => 'Selected'], 'active' => 'farmer-organizations.records', 'active_params' => ['initial_screening_result' => 'Selected']],
-                        ['label' => 'Rejected Farmer Groups', 'route' => 'farmer-organizations.records', 'params' => ['initial_screening_result' => 'Reject'], 'active' => 'farmer-organizations.records', 'active_params' => ['initial_screening_result' => 'Reject']],
-                        ['label' => 'Selected for Reviewed Interview', 'route' => 'reviewed-interviews.index', 'active' => 'reviewed-interviews.*'],
-                        ['label' => 'Selected For Verification Field Visit Pass', 'route' => 'field-visits.index', 'active' => 'field-visits.*'],
-                        ['label' => 'Approved Farmer Producer Groups', 'route' => 'approved-farmer-producer-groups.index', 'active' => 'approved-farmer-producer-groups.*'],
-                        ['label' => 'Selected for Full Proposal Preparation', 'route' => 'full-proposals.index', 'active' => 'full-proposals.*'],
-                        ['label' => 'Agreement Sign FOP', 'route' => 'agreement-sign-fop.index', 'active' => 'agreement-sign-fop.*'],
-                    ],
-                ],
+                ['label' => 'Received All EOI', 'route' => 'selected-eois.index', 'active' => 'selected-eois.*'],
+                ['label' => 'Selected for Review Interview', 'route' => 'reviewed-interviews.index', 'active' => 'reviewed-interviews.*'],
+                ['label' => 'Selected for Verification Field Visit', 'route' => 'field-visits.index', 'active' => 'field-visits.*'],
+                ['label' => 'Selected for Proposal Preparation', 'route' => 'approved-farmer-producer-groups.index', 'active' => 'approved-farmer-producer-groups.*'],
+                ['label' => 'Agreement Signed FPO', 'route' => 'agreement-sign-fop.index', 'active' => 'agreement-sign-fop.*'],
             ],
         ],
         [
@@ -36,7 +24,7 @@
             'active' => ['youth-women.*', 'business-information.*', 'individual-eois.*', 'individual-workflow.*'],
             'accent' => '#7c3aed',
             'icon' => 'entrepreneurs',
-            'section' => 'IRDCRP modules',
+            'section' => 'Component 1',
             'children' => [
                 [
                     'label' => 'Individual Entrepreneur Information',

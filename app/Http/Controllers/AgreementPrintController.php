@@ -13,7 +13,7 @@ class AgreementPrintController extends Controller
 {
     public function farmer(ProductivePartnershipEoi $eoi, string $stage = 'all')
     {
-        abort_unless($eoi->verification_status === 'approved' && $eoi->full_proposal_status === 'approved', 403);
+        abort_unless($eoi->verification_status === 'approved' && filled(data_get($eoi->fop_agreement_tracking, 'agreement_sign.date')), 403);
         return $this->report($eoi, $stage, 'Component 1.2 · Farmer Producer Group', [
             'Farmer organization' => $eoi->organization_name,
             'Registration number' => $eoi->registration_number,

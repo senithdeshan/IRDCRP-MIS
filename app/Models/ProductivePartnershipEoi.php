@@ -11,23 +11,27 @@ class ProductivePartnershipEoi extends Model
     use HasFactory;
 
     public const INTERVIEW_STATUSES = [
-        'likely_mature' => 'Likely amature',
-        'likely_immature' => 'Likely an immature',
-        'likely_immature_possible_to_improve' => 'Likely an immature possible to Improve',
+        'likely_mature' => 'Likely a Mature',
+        'likely_immature' => 'Likely an Immature',
+        'likely_immature_possible_to_improve' => 'Likely an Immature (Possible to Improve)',
         'ineligible' => 'Ineligible',
         'resubmit' => 'Resubmit',
     ];
 
+    public const VERIFICATION_PASS_STATUSES = [
+        'likely_mature',
+        'likely_immature',
+        'likely_immature_possible_to_improve',
+    ];
+
     public const AGREEMENT_TRACKING_STAGES = [
-        'draft_proposal_fop' => 'Draft Proposal FOP',
-        'pmu_received_draft_fp_from_po' => 'PMU Received Draft FP from PO',
-        'fp_handed_over_to_isf' => 'FP Handed over to ISF',
-        'pmu_received_fp_from_isf' => 'PMU Received FP from ISF',
-        'handed_over_iec' => 'Handed over IEC',
-        'pmu_received' => 'PMU Received',
-        'iec_evaluation' => 'IEC Evaluation',
-        'nsc_submission' => 'NSC Submission',
-        'agreement_sign' => 'Agreement Sign',
+        'draft_proposal_fop' => 'PMU Received Draft Proposal from FPO',
+        'fp_handed_over_to_isf' => 'Draft Proposal Handed Over to ISF',
+        'pmu_received_fp_from_isf' => 'PMU Received the Full Proposal from ISF',
+        'handed_over_iec' => 'Full Proposal Handed Over to IEC',
+        'iec_evaluation' => 'PMU Received the Full Proposal from IEC',
+        'nsc_submission' => 'Full Proposal Submitted to NSC',
+        'agreement_sign' => 'Agreement Signed',
     ];
 
     protected $fillable = [
@@ -133,6 +137,11 @@ class ProductivePartnershipEoi extends Model
         return self::INTERVIEW_STATUSES[$this->interview_status] ?? null;
     }
 
+    public function passesInterviewReview(): bool
+    {
+        return in_array($this->interview_status, self::VERIFICATION_PASS_STATUSES, true);
+    }
+
     public function getWasResubmittedForInterviewAttribute(): bool
     {
         return filled($this->interview_resubmitted_at);
@@ -141,6 +150,8 @@ class ProductivePartnershipEoi extends Model
     public function agreementTrackingRows(): array
     {
         $tracking = $this->fop_agreement_tracking ?? [];
+        $tracking['draft_proposal_fop'] = $tracking['draft_proposal_fop'] ?? $tracking['pmu_received_draft_fp_from_po'] ?? null;
+        $tracking['pmu_received'] = $tracking['pmu_received'] ?? $tracking['iec_evaluation'] ?? null;
 
         return collect(self::AGREEMENT_TRACKING_STAGES)
             ->map(function (string $label, string $key) use ($tracking) {
@@ -153,7 +164,7 @@ class ProductivePartnershipEoi extends Model
                     'label' => $label,
                     'date' => $date,
                     'value' => $value,
-                    'complete' => filled($date) || filled($value),
+                    'complete' => filled($date),
                 ];
             })
             ->values()
@@ -165,13 +176,20 @@ class ProductivePartnershipEoi extends Model
         $rows = $this->agreementTrackingRows();
         $current = collect($rows)->filter(fn (array $row) => $row['complete'])->last();
 
-        return $current ?: [
-            'key' => null,
-            'label' => 'Not started',
-            'date' => null,
-            'value' => null,
-            'complete' => false,
-        ];
+        if (! $current) {
+            return [
+                'key' => null,
+                'label' => 'Not started',
+                'date' => null,
+                'value' => null,
+                'complete' => false,
+                'number' => 0,
+            ];
+        }
+
+        $current['number'] = collect($rows)->search(fn (array $row) => $row['key'] === $current['key']) + 1;
+
+        return $current;
     }
 
     public function agreementTrackingCompletedCount(): int

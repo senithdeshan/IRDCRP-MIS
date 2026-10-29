@@ -143,6 +143,34 @@
                 });
             })();
         </script>
+        <script>
+            (() => {
+                const key = 'irdcrp-eoi-scroll-position';
+                const returnKey = 'irdcrp-eoi-return-scroll-position';
+                document.addEventListener('submit', (event) => {
+                    if (event.target instanceof HTMLFormElement && event.target.matches('[data-preserve-scroll]')) {
+                        sessionStorage.setItem(key, JSON.stringify({ path: location.pathname + location.search, y: window.scrollY }));
+                    }
+                }, true);
+                document.addEventListener('click', (event) => {
+                    const link = event.target instanceof Element ? event.target.closest('[data-preserve-scroll-link]') : null;
+                    if (link) sessionStorage.setItem(returnKey, JSON.stringify({ path: location.pathname + location.search, y: window.scrollY }));
+                });
+                window.addEventListener('pageshow', () => {
+                    const returned = sessionStorage.getItem(returnKey);
+                    if (returned) {
+                        try { const position = JSON.parse(returned); if (position.path === location.pathname + location.search) { sessionStorage.removeItem(returnKey); requestAnimationFrame(() => window.scrollTo(0, position.y)); } } catch (_) { sessionStorage.removeItem(returnKey); }
+                    }
+                    const saved = sessionStorage.getItem(key);
+                    if (!saved) return;
+                    sessionStorage.removeItem(key);
+                    try {
+                        const position = JSON.parse(saved);
+                        if (position.path === location.pathname + location.search) requestAnimationFrame(() => window.scrollTo(0, position.y));
+                    } catch (_) {}
+                });
+            })();
+        </script>
         @stack('scripts')
         @include('layouts.partials.alpine-fallback')
     </body>

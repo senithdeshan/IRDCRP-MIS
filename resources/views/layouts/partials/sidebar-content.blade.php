@@ -22,9 +22,6 @@
         $expandedComponent = collect($navItems)->first(fn ($item) => ! empty($item['children'])
             && request()->routeIs(...(array) $item['active'])
             && collect($item['active_params'] ?? [])->every(fn ($value, $key) => request($key) === $value))['route'] ?? null;
-        if ($expandedComponent === null && request()->routeIs('dashboard')) {
-            $expandedComponent = 'productive-partnership.index';
-        }
 
         $findActiveNavLabel = function (array $items) use (&$findActiveNavLabel) {
             foreach ($items as $item) {

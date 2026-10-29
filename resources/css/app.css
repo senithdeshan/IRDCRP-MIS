@@ -4965,7 +4965,277 @@ a[href], button, input, select, textarea, summary, [role="button"] {
     box-shadow: 0 4px 18px rgba(15, 23, 42, 0.035);
 }
 
-.component-workspace main > section {
+.eoi-create-page {
+    min-height: calc(100vh - 10rem);
+    padding: 1.5rem 0 3.5rem;
+    background: linear-gradient(180deg, #f7faf9 0, #f3f6f8 20rem);
+}
+
+.eoi-create-heading,
+.eoi-create-tools,
+.eoi-entry-section {
+    width: min(100% - 2rem, 80rem);
+    margin-inline: auto;
+}
+
+.eoi-create-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.eoi-create-heading h1 {
+    letter-spacing: -0.035em;
+}
+
+.eoi-create-eyebrow {
+    color: #047857;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+}
+
+.eoi-create-back {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.5rem;
+    border: 1px solid #d7e2e4;
+    border-radius: 0.5rem;
+    background: #fff;
+    padding: 0.55rem 0.8rem;
+    color: #334155;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.eoi-create-back:hover {
+    border-color: #9dbbb8;
+    background: #f8fbfa;
+}
+
+.eoi-create-back:focus-visible,
+.eoi-create-tool-card a:focus-visible,
+.eoi-create-tool-card button:focus-visible,
+.eoi-entry-form button:focus-visible,
+.eoi-entry-form a:focus-visible {
+    outline: 3px solid rgba(20, 125, 112, 0.28);
+    outline-offset: 2px;
+}
+
+.eoi-create-tools {
+    padding-block: 0 1.25rem;
+}
+
+.eoi-create-tools-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.eoi-create-tool-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    min-height: 8.5rem;
+    border: 1px solid #e1e8eb;
+    border-top: 3px solid #147d70;
+    border-radius: 0.9rem;
+    padding: 1.25rem;
+    box-shadow: 0 3px 12px rgba(15, 23, 42, 0.04);
+    transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.eoi-create-tool-card:hover {
+    border-color: #cbd9dc;
+    border-top-color: #147d70;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.075);
+    transform: translateY(-1px);
+}
+
+.eoi-create-tool-icon {
+    display: grid;
+    width: 2.75rem;
+    height: 2.75rem;
+    flex: 0 0 auto;
+    place-items: center;
+    border: 1px solid #dcece7;
+    border-radius: 0.7rem;
+    background: #f0f8f5;
+    color: #147d70;
+    font-size: 1.25rem;
+    font-weight: 800;
+}
+
+.eoi-create-tool-icon svg {
+    width: 1.3rem;
+    height: 1.3rem;
+}
+
+.eoi-create-tool-card h2 {
+    font-size: 0.95rem;
+    letter-spacing: -0.01em;
+}
+
+.eoi-create-tool-card p {
+    max-width: 34rem;
+    line-height: 1.55;
+}
+
+.eoi-create-tool-card > div > a,
+.eoi-create-tool-card button {
+    min-height: 2.5rem;
+    border-radius: 0.5rem;
+}
+
+.eoi-create-tool-card input[type="file"] {
+    min-height: 2.5rem;
+    border: 1px solid #dbe3e8;
+    border-radius: 0.5rem;
+    background: #fff;
+    padding: 0.3rem;
+}
+
+.eoi-create-tool-card > div {
+    min-width: 0;
+    flex: 1;
+}
+
+.eoi-entry-section {
+    padding: 0 0 1.5rem;
+}
+
+.eoi-entry-form {
+    border: 1px solid #e1e8eb;
+    border-radius: 1rem;
+    box-shadow: 0 8px 28px rgba(15, 23, 42, 0.055);
+}
+
+.eoi-entry-form > div:first-child {
+    border-color: #e7eeec;
+    background: linear-gradient(110deg, #f0f8f5, #fff 68%);
+    padding: 1.4rem 1.5rem;
+}
+
+.eoi-entry-form fieldset {
+    padding: 1rem 1.5rem 1.4rem;
+    scroll-margin-top: 1rem;
+}
+
+.eoi-entry-form legend {
+    padding-top: 0.45rem;
+    font-size: 0.9rem;
+    color: #1e293b;
+    letter-spacing: -0.01em;
+}
+
+.eoi-entry-form legend > span {
+    width: 1.65rem;
+    height: 1.65rem;
+    border: 1px solid #dcece7;
+    background: #f0f8f5;
+    color: #147d70;
+}
+
+.eoi-entry-form label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #475569;
+}
+
+.eoi-entry-form .eoi-entry-control {
+    border-color: #d9e2e5;
+    border-radius: 0.6rem;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.025);
+}
+
+.eoi-entry-form .eoi-entry-control:hover:not(:disabled) {
+    border-color: #aebfbe;
+}
+
+.eoi-entry-form .eoi-entry-control:focus {
+    border-color: #148477;
+    box-shadow: 0 0 0 3px rgba(20, 132, 119, 0.12);
+    outline: none;
+}
+
+.eoi-entry-form textarea {
+    min-height: 5rem;
+}
+
+.eoi-entry-form > div:last-child {
+    border-top: 1px solid #e8edf0;
+    background: #f8fafb;
+    padding: 1rem 1.5rem;
+}
+
+.eoi-entry-form > div:last-child button {
+    min-height: 2.75rem;
+    border-radius: 0.6rem;
+    padding-inline: 1.25rem;
+    box-shadow: 0 3px 8px rgba(4, 120, 87, 0.16);
+}
+
+.eoi-entry-form > div:last-child a {
+    padding: 0.6rem 0.25rem;
+}
+
+@media (max-width: 640px) {
+    .eoi-create-page {
+        padding-top: 1.25rem;
+    }
+
+    .eoi-create-heading,
+    .eoi-create-tools,
+    .eoi-entry-section {
+        width: min(100% - 1.25rem, 80rem);
+    }
+
+    .eoi-create-heading {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .eoi-create-back {
+        min-height: 2.25rem;
+    }
+
+    .eoi-create-tools-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .eoi-create-tool-card {
+        min-height: 0;
+        padding: 1rem;
+    }
+
+    .eoi-entry-form fieldset {
+        padding-inline: 1rem;
+    }
+
+    .eoi-entry-form > div:first-child,
+    .eoi-entry-form > div:last-child {
+        padding-inline: 1rem;
+    }
+
+    .eoi-create-tool-card {
+        gap: 0.85rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .eoi-create-tool-card {
+        transition: none;
+    }
+
+    .eoi-create-tool-card:hover {
+        transform: none;
+    }
+}
+
+.component-workspace main > section:only-child {
     min-height: calc(100vh - 10rem);
     background: linear-gradient(180deg, #f8fafc 0%, #f4f7f9 100%);
 }
@@ -5058,6 +5328,807 @@ a[href], button, input, select, textarea, summary, [role="button"] {
 
 .component-workspace :is(.filter-panel, .period-summary-panel) {
     background-color: #ffffff;
+}
+
+.component-workspace .eoi-registry-table {
+    width: 100%;
+    min-width: 100%;
+    table-layout: fixed;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.component-workspace .eoi-registry-table th,
+.component-workspace .eoi-registry-table td {
+    min-width: 0;
+    padding: 0.8rem 0.65rem;
+    overflow-wrap: anywhere;
+    vertical-align: top;
+}
+
+.component-workspace .eoi-registry-table thead th {
+    white-space: normal;
+    font-size: 0.64rem;
+}
+
+.component-workspace .eoi-registry-table thead th:nth-child(1) { width: 14%; }
+.component-workspace .eoi-registry-table thead th:nth-child(2) { width: 21%; }
+.component-workspace .eoi-registry-table thead th:nth-child(3) { width: 13%; }
+.component-workspace .eoi-registry-table thead th:nth-child(4) { width: 10%; }
+.component-workspace .eoi-registry-table thead th:nth-child(5) { width: 17%; }
+.component-workspace .eoi-registry-table thead th:nth-child(6) { width: 14%; }
+.component-workspace .eoi-registry-table thead th:nth-child(7) { width: 11%; }
+
+.component-workspace .eoi-registry-table thead th a {
+    display: inline-flex;
+    align-items: flex-start;
+    gap: 0.2rem;
+}
+
+.component-workspace .eoi-registry-table tbody td form select {
+    max-width: 100%;
+    padding-inline: 0.5rem 1.5rem;
+}
+
+.component-workspace .eoi-registry-table tbody td[data-label="Actions"] > div {
+    flex-wrap: wrap;
+    gap: 0.35rem;
+}
+
+@media (max-width: 1440px) and (min-width: 768px) {
+    .component-workspace main .filter-panel {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .component-workspace main .filter-panel > .filter-control:first-child,
+    .component-workspace main .filter-panel > div:last-child {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 767px) {
+    .component-workspace .eoi-registry-table,
+    .component-workspace .eoi-registry-table tbody {
+        display: block;
+    }
+
+    .component-workspace .eoi-registry-table thead {
+        display: none;
+    }
+
+    .component-workspace .eoi-registry-table tbody tr {
+        display: block;
+        margin: 0.75rem;
+        overflow: hidden;
+        border: 1px solid rgb(226 232 240);
+        border-radius: 0.8rem;
+        background: #fff;
+    }
+
+    .component-workspace .eoi-registry-table tbody td {
+        display: grid;
+        grid-template-columns: minmax(7.5rem, 0.42fr) minmax(0, 1fr);
+        gap: 0.75rem;
+        align-items: start;
+        padding: 0.7rem 0.85rem;
+        border-bottom: 1px solid rgb(241 245 249);
+        text-align: left;
+    }
+
+    .component-workspace .eoi-registry-table tbody td[data-label]::before {
+        color: rgb(100 116 139);
+        content: attr(data-label);
+        font-size: 0.68rem;
+        font-weight: 700;
+        line-height: 1.4;
+    }
+
+    .component-workspace .eoi-registry-table tbody td:last-child {
+        border-bottom: 0;
+    }
+
+    .component-workspace .eoi-registry-table tbody td[data-label="Actions"] > div {
+        justify-content: flex-start;
+    }
+
+    .component-workspace .eoi-registry-table tbody td[colspan] {
+        display: block;
+    }
+}
+
+.component-workspace .reviewed-interviews-table {
+    width: 100%;
+    min-width: 100%;
+    table-layout: fixed;
+}
+
+.component-workspace .reviewed-interviews-table thead th,
+.component-workspace .reviewed-interviews-table tbody td {
+    min-width: 0;
+    padding: 0.7rem 0.55rem;
+    overflow-wrap: anywhere;
+    vertical-align: top;
+}
+
+.component-workspace .reviewed-interviews-table thead th {
+    white-space: normal;
+    font-size: 0.64rem;
+    line-height: 1.35;
+}
+
+.component-workspace .reviewed-interviews-table thead th:nth-child(1) { width: 13%; }
+.component-workspace .reviewed-interviews-table thead th:nth-child(2) { width: 18%; }
+.component-workspace .reviewed-interviews-table thead th:nth-child(3) { width: 16%; }
+.component-workspace .reviewed-interviews-table thead th:nth-child(4) { width: 13%; }
+.component-workspace .reviewed-interviews-table thead th:nth-child(5) { width: 10%; }
+.component-workspace .reviewed-interviews-table thead th:nth-child(6) { width: 21%; }
+.component-workspace .reviewed-interviews-table thead th:nth-child(7) { width: 9%; }
+
+.component-workspace .reviewed-interviews-table thead th a {
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+.component-workspace .reviewed-interviews-table tbody td form select {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+}
+
+.component-workspace .reviewed-interviews-table tbody td[data-label="Actions"] > div {
+    gap: 0.35rem;
+}
+
+@media (max-width: 1199px) {
+    .component-workspace .reviewed-interviews-table,
+    .component-workspace .reviewed-interviews-table tbody {
+        display: block;
+    }
+
+    .component-workspace .reviewed-interviews-table thead {
+        display: none;
+    }
+
+    .component-workspace .reviewed-interviews-table tbody tr {
+        display: block;
+        margin: 0.75rem;
+        overflow: hidden;
+        border: 1px solid rgb(226 232 240);
+        border-radius: 0.8rem;
+        background: #fff;
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.045);
+    }
+
+    .component-workspace .reviewed-interviews-table tbody td {
+        display: grid;
+        grid-template-columns: minmax(8.5rem, 0.4fr) minmax(0, 1fr);
+        gap: 0.75rem;
+        padding: 0.7rem 0.85rem;
+        border: 0;
+        border-bottom: 1px solid rgb(241 245 249);
+        border-radius: 0;
+        text-align: left;
+    }
+
+    .component-workspace .reviewed-interviews-table tbody td[data-label]::before {
+        color: rgb(100 116 139);
+        content: attr(data-label);
+        font-size: 0.68rem;
+        font-weight: 700;
+        line-height: 1.45;
+    }
+
+    .component-workspace .reviewed-interviews-table tbody td[data-label="Actions"] > div {
+        justify-content: flex-start;
+    }
+
+    .component-workspace .reviewed-interviews-table tbody td[colspan] {
+        display: block;
+        border: 0;
+        text-align: center;
+    }
+}
+
+.component-workspace .reviewed-interviews-table {
+    border-collapse: separate;
+    border-spacing: 0;
+    color: #1e293b;
+    font-size: 0.82rem;
+}
+
+.component-workspace .reviewed-interviews-table thead {
+    background: #f1f6f5;
+}
+
+.component-workspace .reviewed-interviews-table thead th {
+    border-bottom: 1px solid #dce7e5;
+    color: #475569;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.075em;
+    line-height: 1.45;
+    vertical-align: bottom;
+}
+
+.component-workspace .reviewed-interviews-table thead th a {
+    color: #334155;
+    text-decoration: none;
+    transition: color 140ms ease;
+}
+
+.component-workspace .reviewed-interviews-table thead th a:hover {
+    color: #047857;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.component-workspace .reviewed-interviews-table tbody tr,
+.component-workspace .reviewed-interviews-table tbody tr.is-reviewed {
+    background: #fff;
+    box-shadow: none;
+}
+
+.component-workspace .reviewed-interviews-table tbody tr:nth-child(even) {
+    background: #fbfcfc;
+}
+
+.component-workspace .reviewed-interviews-table tbody tr:hover,
+.component-workspace .reviewed-interviews-table tbody tr.is-reviewed:hover {
+    background: #f4faf8;
+}
+
+.component-workspace .reviewed-interviews-table tbody td {
+    border-top: 0;
+    border-bottom: 1px solid #e8eef0;
+    color: #475569;
+    line-height: 1.5;
+}
+
+.component-workspace .reviewed-interviews-table tbody td:first-child {
+    border-left: 0;
+    border-radius: 0;
+}
+
+.component-workspace .reviewed-interviews-table tbody td:last-child {
+    border-right: 0;
+    border-radius: 0;
+}
+
+.component-workspace .reviewed-interviews-table tbody tr.is-reviewed td:first-child {
+    border-left: 3px solid #10b981;
+}
+
+.component-workspace .reviewed-interviews-table tbody td form {
+    margin: 0;
+}
+
+.component-workspace .reviewed-interviews-table tbody td form label {
+    display: block;
+    color: #475569;
+    font-size: 0.68rem;
+    font-weight: 650;
+}
+
+.component-workspace .reviewed-interviews-table tbody td form input[type="number"],
+.component-workspace .reviewed-interviews-table tbody td form select {
+    min-height: 2.35rem;
+    border-color: #d5e0e3;
+    border-radius: 0.55rem;
+    background-color: #fff;
+    color: #1e293b;
+    font-size: 0.75rem;
+}
+
+.component-workspace .reviewed-interviews-table tbody td form input[type="number"] {
+    width: 100%;
+    max-width: 7rem;
+    padding-inline: 0.6rem;
+}
+
+.component-workspace .reviewed-interviews-table tbody td form :is(input, select):focus {
+    border-color: #0f8b78;
+    box-shadow: 0 0 0 3px rgba(15, 139, 120, 0.12);
+    outline: none;
+}
+
+.component-workspace .reviewed-interviews-table tbody td[data-label="Actions"] button,
+.component-workspace .reviewed-interviews-table tbody td[data-label="Actions"] a {
+    box-shadow: none;
+}
+
+@media (max-width: 1199px) {
+    .component-workspace .reviewed-interviews-table tbody tr,
+    .component-workspace .reviewed-interviews-table tbody tr:nth-child(even),
+    .component-workspace .reviewed-interviews-table tbody tr.is-reviewed {
+        background: #fff;
+    }
+
+    .component-workspace .reviewed-interviews-table tbody tr.is-reviewed td:first-child {
+        border-left: 0;
+    }
+}
+
+.component-workspace .field-visits-table {
+    width: 100%;
+    min-width: 100%;
+    table-layout: fixed;
+}
+
+.component-workspace .field-visits-table thead th,
+.component-workspace .field-visits-table tbody td {
+    min-width: 0;
+    padding: 0.7rem 0.6rem;
+    overflow-wrap: anywhere;
+    vertical-align: top;
+}
+
+.component-workspace .field-visits-table thead th {
+    border-bottom: 1px solid #dce7e5;
+    background: #f1f6f5;
+    color: #475569;
+    font-size: 0.64rem;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    line-height: 1.4;
+    white-space: normal;
+}
+
+.component-workspace .field-visits-table thead th a {
+    color: #334155;
+    text-decoration: none;
+}
+
+.component-workspace .field-visits-table thead th a:hover {
+    color: #047857;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.component-workspace .field-visits-table thead th:nth-child(1) { width: 13%; }
+.component-workspace .field-visits-table thead th:nth-child(2) { width: 18%; }
+.component-workspace .field-visits-table thead th:nth-child(3) { width: 12%; }
+.component-workspace .field-visits-table thead th:nth-child(4) { width: 10%; }
+.component-workspace .field-visits-table thead th:nth-child(5) { width: 17%; }
+.component-workspace .field-visits-table thead th:nth-child(6) { width: 20%; }
+.component-workspace .field-visits-table thead th:nth-child(7) { width: 10%; }
+
+.component-workspace .field-visits-table tbody tr {
+    background: #fff;
+    transition: background-color 140ms ease;
+}
+
+.component-workspace .field-visits-table tbody tr:nth-child(even) {
+    background: #fbfcfc;
+}
+
+.component-workspace .field-visits-table tbody tr:hover {
+    background: #f2f8f6 !important;
+}
+
+.component-workspace .field-visits-table tbody td {
+    border-bottom: 1px solid #e8eef0;
+    color: #475569;
+    line-height: 1.5;
+}
+
+.component-workspace .field-visits-table tbody td form {
+    margin: 0;
+}
+
+.component-workspace .field-visits-table tbody td form :is(textarea, select) {
+    min-width: 0;
+    border-color: #d5e0e3;
+    border-radius: 0.55rem;
+    font-size: 0.75rem;
+}
+
+.component-workspace .field-visits-table tbody td form textarea {
+    min-height: 4rem;
+    resize: vertical;
+}
+
+.component-workspace .field-visits-table tbody td form label {
+    color: #475569;
+    font-size: 0.69rem;
+    font-weight: 650;
+}
+
+.component-workspace .field-visits-table tbody td[data-label="Review Interview Result"] span {
+    max-width: 100%;
+    justify-content: center;
+    border: 1px solid #ccebdc;
+    line-height: 1.4;
+    text-align: center;
+    white-space: normal;
+}
+
+.component-workspace .field-visits-table tbody td[data-label="Actions"] button,
+.component-workspace .field-visits-table tbody td[data-label="Actions"] a {
+    box-shadow: none;
+}
+
+.component-workspace .field-visits-table tbody td form :is(textarea, select):focus {
+    border-color: #0f8b78;
+    box-shadow: 0 0 0 3px rgba(15, 139, 120, 0.12);
+    outline: none;
+}
+
+@media (max-width: 1199px) {
+    .component-workspace .field-visits-table,
+    .component-workspace .field-visits-table tbody {
+        display: block;
+    }
+
+    .component-workspace .field-visits-table thead {
+        display: none;
+    }
+
+    .component-workspace .field-visits-table tbody tr {
+        display: block;
+        margin: 0.75rem;
+        overflow: hidden;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.8rem;
+        background: #fff !important;
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.045);
+    }
+
+    .component-workspace .field-visits-table tbody td {
+        display: grid;
+        grid-template-columns: minmax(9rem, 0.4fr) minmax(0, 1fr);
+        gap: 0.75rem;
+        padding: 0.7rem 0.85rem;
+        border: 0;
+        border-bottom: 1px solid #f1f5f9;
+        text-align: left;
+    }
+
+    .component-workspace .field-visits-table tbody td[data-label]::before {
+        color: #64748b;
+        content: attr(data-label);
+        font-size: 0.68rem;
+        font-weight: 700;
+        line-height: 1.45;
+    }
+
+    .component-workspace .field-visits-table tbody td[data-label="Actions"] > div {
+        justify-content: flex-start;
+    }
+
+    .component-workspace .field-visits-table tbody td[colspan] {
+        display: block;
+        border: 0;
+        text-align: center;
+    }
+}
+
+.component-workspace .approved-proposal-table {
+    width: 100%;
+    min-width: 100%;
+    table-layout: fixed;
+}
+
+.component-workspace .approved-proposal-table thead th,
+.component-workspace .approved-proposal-table tbody td {
+    min-width: 0;
+    padding: 0.7rem 0.6rem;
+    overflow-wrap: anywhere;
+    vertical-align: top;
+}
+
+.component-workspace .approved-proposal-table thead th {
+    background: #f1f6f5;
+    border-bottom: 1px solid #dce7e5;
+    color: #475569;
+    font-size: 0.64rem;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    line-height: 1.4;
+    white-space: normal;
+}
+
+.component-workspace .approved-proposal-table thead th a {
+    color: #334155;
+    text-decoration: none;
+}
+
+.component-workspace .approved-proposal-table thead th a:hover {
+    color: #047857;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.component-workspace .approved-proposal-table thead th:nth-child(1) { width: 12%; }
+.component-workspace .approved-proposal-table thead th:nth-child(2) { width: 22%; }
+.component-workspace .approved-proposal-table thead th:nth-child(3) { width: 13%; }
+.component-workspace .approved-proposal-table thead th:nth-child(4) { width: 9%; }
+.component-workspace .approved-proposal-table thead th:nth-child(5) { width: 29%; }
+.component-workspace .approved-proposal-table thead th:nth-child(6) { width: 15%; }
+
+.component-workspace .approved-proposal-table tbody tr {
+    background: #fff;
+    transition: background-color 140ms ease;
+}
+
+.component-workspace .approved-proposal-table tbody tr:nth-child(even) {
+    background: #fbfcfc;
+}
+
+.component-workspace .approved-proposal-table tbody tr:hover {
+    background: #f2f8f6;
+}
+
+.component-workspace .approved-proposal-table tbody td {
+    border-bottom: 1px solid #e8eef0;
+    color: #475569;
+    line-height: 1.5;
+}
+
+.component-workspace .approved-proposal-table tbody td[data-label="Actions"] .record-actions {
+    width: auto;
+    margin: 0;
+}
+
+.fop-tracker-modal {
+    padding: clamp(0.45rem, 1.8vw, 1.25rem);
+}
+
+.fop-tracker-modal-panel {
+    width: min(100%, 76rem);
+    max-height: calc(100dvh - 2.5rem);
+    border-radius: 0.85rem;
+}
+
+.fop-tracker-modal-body {
+    display: grid;
+    grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
+    max-height: calc(100dvh - 8rem);
+    overflow: hidden;
+}
+
+.fop-tracker-summary-pane,
+.fop-tracker-form-pane {
+    min-width: 0;
+    max-height: calc(100dvh - 8rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+.fop-tracker-entry {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.fop-tracker-entry input {
+    min-width: 0;
+    max-width: 100%;
+}
+
+@media (max-width: 1199px) {
+    .component-workspace .approved-proposal-table,
+    .component-workspace .approved-proposal-table tbody {
+        display: block;
+    }
+
+    .component-workspace .approved-proposal-table thead {
+        display: none;
+    }
+
+    .component-workspace .approved-proposal-table tbody tr {
+        display: block;
+        margin: 0.75rem;
+        overflow: hidden;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.8rem;
+        background: #fff !important;
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.045);
+    }
+
+    .component-workspace .approved-proposal-table tbody td {
+        display: grid;
+        grid-template-columns: minmax(8.5rem, 0.38fr) minmax(0, 1fr);
+        gap: 0.75rem;
+        padding: 0.7rem 0.85rem;
+        border: 0;
+        border-bottom: 1px solid #f1f5f9;
+        text-align: left;
+    }
+
+    .component-workspace .approved-proposal-table tbody td[data-label]::before {
+        color: #64748b;
+        content: attr(data-label);
+        font-size: 0.68rem;
+        font-weight: 700;
+        line-height: 1.45;
+    }
+
+    .component-workspace .approved-proposal-table tbody td[data-label="Actions"] .record-actions {
+        justify-items: start;
+    }
+
+    .component-workspace .approved-proposal-table tbody td[colspan] {
+        display: block;
+        border: 0;
+        text-align: center;
+    }
+
+    .fop-tracker-modal-body {
+        display: block;
+        max-height: calc(100dvh - 8.5rem);
+        overflow-y: auto;
+    }
+
+    .fop-tracker-summary-pane,
+    .fop-tracker-form-pane {
+        max-height: none;
+        overflow: visible;
+    }
+}
+
+@media (max-width: 640px) {
+    .fop-tracker-modal {
+        padding: 0.4rem;
+    }
+
+    .fop-tracker-modal-panel {
+        width: 100%;
+        max-height: calc(100dvh - 0.8rem);
+        border-radius: 0.7rem;
+    }
+
+    .fop-tracker-modal-body {
+        max-height: calc(100dvh - 6rem);
+    }
+
+    .fop-timeline-item {
+        grid-template-columns: 0.9rem minmax(0, 1fr);
+        gap: 0.55rem;
+    }
+
+    .fop-tracker-entry {
+        padding: 0.75rem;
+    }
+}
+
+.component-workspace .approved-proposal-table {
+    border-collapse: separate;
+    border-spacing: 0;
+    color: #334155;
+    font-size: 0.82rem;
+}
+
+.component-workspace .approved-proposal-table thead th {
+    padding: 0.85rem 0.7rem;
+    background: #f8fafc;
+    color: #475569;
+    font-size: 0.65rem;
+    letter-spacing: 0.065em;
+    line-height: 1.45;
+    text-align: left;
+}
+
+.component-workspace .approved-proposal-table thead th a {
+    display: inline-flex;
+    align-items: flex-start;
+    gap: 0.3rem;
+    line-height: 1.45;
+}
+
+.component-workspace .approved-proposal-table tbody tr:nth-child(even) {
+    background: #fcfdfd;
+}
+
+.component-workspace .approved-proposal-table tbody tr:hover {
+    background: #f4faf8;
+}
+
+.component-workspace .approved-proposal-table tbody td {
+    padding: 0.85rem 0.7rem;
+    line-height: 1.55;
+}
+
+.component-workspace .approved-proposal-table tbody td[data-label="EOI Number"] {
+    color: #0f172a;
+    font-size: 0.82rem;
+    letter-spacing: 0.01em;
+    overflow-wrap: anywhere;
+}
+
+.component-workspace .approved-proposal-table .fop-tracker-card {
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+    border-color: #dbe8e8;
+    border-radius: 0.75rem;
+    background: linear-gradient(145deg, #ffffff, #f4faf9);
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.045);
+    padding: 0.85rem;
+}
+
+.component-workspace .approved-proposal-table .fop-tracker-card > div:first-child > div:first-child > p:first-child {
+    color: #64748b;
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+}
+
+.component-workspace .approved-proposal-table .fop-tracker-card > div:first-child > div:first-child > p:nth-child(2) {
+    color: #0f3f46;
+    overflow-wrap: anywhere;
+}
+
+.component-workspace .approved-proposal-table .fop-tracker-card > div:first-child > span {
+    flex: 0 0 auto;
+    border: 1px solid #cde8e9;
+    background: #eaf7f7;
+    color: #155e63;
+    white-space: nowrap;
+}
+
+.component-workspace .approved-proposal-table .fop-tracker-card > div:last-child {
+    height: 0.45rem;
+    background: #e5eded;
+}
+
+.component-workspace .approved-proposal-table .record-actions {
+    display: flex;
+    width: auto;
+    max-width: none;
+    align-items: center;
+    justify-content: flex-start;
+    justify-items: initial;
+    gap: 0.5rem;
+    margin: 0;
+}
+
+.component-workspace .approved-proposal-table .record-actions > a,
+.component-workspace .approved-proposal-table .record-actions > button {
+    min-height: 2.4rem;
+}
+
+.component-workspace .approved-proposal-table .record-actions > button {
+    width: auto;
+}
+
+.component-workspace .approved-proposal-table .record-actions > a:focus-visible,
+.component-workspace .approved-proposal-table .record-actions > button:focus-visible,
+.component-workspace .approved-proposal-table thead a:focus-visible {
+    outline: 3px solid rgba(15, 139, 120, 0.22);
+    outline-offset: 2px;
+}
+
+@media (max-width: 1199px) {
+    .component-workspace .approved-proposal-table tbody td {
+        grid-template-columns: minmax(8.5rem, 0.38fr) minmax(0, 1fr);
+        gap: 0.9rem;
+    }
+
+    .component-workspace .approved-proposal-table .fop-tracker-card {
+        max-width: none;
+    }
+
+    .component-workspace .approved-proposal-table .record-actions {
+        max-width: 12rem;
+    }
+}
+
+@media (max-width: 640px) {
+    .component-workspace .approved-proposal-table tbody td {
+        grid-template-columns: minmax(6.8rem, 0.34fr) minmax(0, 1fr);
+        gap: 0.65rem;
+        padding: 0.75rem;
+    }
+}
+
+.component-workspace .agreement-signed-fpo-table thead th {
+    text-align: left;
+}
+
+.component-workspace .agreement-signed-fpo-table tbody td:last-child {
+    text-align: left;
+}
+
+.component-workspace .agreement-signed-fpo-table tbody td:last-child > div {
+    justify-content: flex-start;
 }
 
 .component-workspace .filter-action {
@@ -5401,5 +6472,114 @@ a[href], button, input, select, textarea, summary, [role="button"] {
     .cerc-stat-card,
     .cerc-category-card {
         transition: none;
+    }
+}
+
+/* Shared responsive guardrails for screens and modules using utility classes. */
+:root {
+    --irdcrp-ink: #172b27;
+    --irdcrp-muted: #52635f;
+    --irdcrp-border: #d8e2df;
+    --irdcrp-surface: #fff;
+    --irdcrp-primary: #08734f;
+    --irdcrp-positive: #166534;
+    --irdcrp-positive-bg: #dcfce7;
+    --irdcrp-negative: #991b1b;
+    --irdcrp-negative-bg: #fee2e2;
+    --irdcrp-focus: #0f766e;
+}
+
+body {
+    color: var(--irdcrp-ink);
+}
+
+main,
+main > *,
+main :is(section, article, form, fieldset) {
+    min-width: 0;
+}
+
+main :is(img, video, canvas, svg) {
+    max-width: 100%;
+}
+
+main :is(input, select, textarea, button) {
+    max-width: 100%;
+}
+
+main :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea) {
+    color: var(--irdcrp-ink);
+}
+
+main :is(input, select, textarea, button, a):focus-visible,
+.sidebar-shell :is(button, a, summary):focus-visible {
+    outline: 3px solid color-mix(in srgb, var(--irdcrp-focus) 35%, transparent);
+    outline-offset: 2px;
+}
+
+main .overflow-x-auto,
+main .overflow-auto {
+    max-width: 100%;
+    overscroll-behavior-inline: contain;
+    scrollbar-color: #94aaa3 #edf2f0;
+}
+
+main .overflow-x-auto > table,
+main .overflow-auto > table {
+    max-width: 100%;
+}
+
+main :is(.modal-panel, [role="dialog"]:not(.confirm-dialog-panel)) {
+    box-sizing: border-box;
+    max-width: min(100%, 72rem);
+    max-height: calc(100dvh - 2rem);
+    overflow: auto;
+    overscroll-behavior: contain;
+}
+
+.status-yes,
+.status-positive,
+[data-status="yes"],
+[data-status="approved"] {
+    border-color: #86efac;
+    background-color: var(--irdcrp-positive-bg);
+    color: var(--irdcrp-positive);
+}
+
+.status-no,
+.status-negative,
+[data-status="no"],
+[data-status="rejected"] {
+    border-color: #fca5a5;
+    background-color: var(--irdcrp-negative-bg);
+    color: var(--irdcrp-negative);
+}
+
+@media (max-width: 1023px) {
+    .app-topbar-inner,
+    main {
+        min-width: 0;
+    }
+}
+
+@media (max-width: 639px) {
+    main {
+        padding-bottom: 1.5rem;
+    }
+
+    main :is(.overflow-x-auto, .overflow-auto) {
+        border-radius: 0.75rem;
+    }
+
+    main :is(.modal-panel, [role="dialog"]:not(.confirm-dialog-panel)) {
+        width: calc(100vw - 1rem);
+        max-width: calc(100vw - 1rem);
+        max-height: calc(100dvh - 1rem);
+        margin: 0.5rem;
+        border-radius: 0.8rem;
+    }
+
+    .app-topbar-welcome p {
+        overflow-wrap: anywhere;
     }
 }

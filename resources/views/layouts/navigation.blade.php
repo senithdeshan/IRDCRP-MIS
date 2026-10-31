@@ -2,6 +2,7 @@
     $navItems = [
         ['label' => 'Dashboard', 'route' => 'dashboard', 'active' => 'dashboard', 'accent' => '#0f766e', 'icon' => 'dashboard', 'section' => 'Workspace'],
         ['label' => 'STAFF PROFILE IRDCRP', 'route' => 'staff-profiles.index', 'active' => 'staff-profiles.*', 'accent' => '#2563eb', 'icon' => 'staff', 'section' => 'Workspace'],
+        ['label' => 'User Management', 'route' => 'user-management.index', 'active' => 'user-management.*', 'accent' => '#059669', 'icon' => 'staff', 'section' => 'Workspace'],
         [
             'label' => 'Component 1.2 – Productive Partnership',
             'route' => 'productive-partnership.index',

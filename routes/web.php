@@ -4,6 +4,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProductivePartnershipEoiController;
 use App\Http\Controllers\StaffController;
 use App\Http\Controllers\StaffProfileController;
+use App\Http\Controllers\UserManagementController;
 use App\Http\Controllers\TankRegistrationController;
 use App\Http\Controllers\YouthWomenApplicantController;
 use App\Http\Controllers\FarmerOrganizationController;
@@ -26,6 +27,7 @@ Route::get('/dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
+    Route::get('/user-management', [UserManagementController::class, 'index'])->name('user-management.index');
     Route::get('/staff-profiles', [StaffProfileController::class, 'index'])->name('staff-profiles.index');
     Route::get('/staff-profiles/create', [StaffProfileController::class, 'create'])->name('staff-profiles.create');
     Route::post('/staff-profiles', [StaffProfileController::class, 'store'])->name('staff-profiles.store');
@@ -36,6 +38,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/staff-profiles/{staffProfile}/documents/{type}', [StaffProfileController::class, 'document'])->name('staff-profiles.document');
 
     Route::resource('staff', StaffController::class)->except(['show', 'destroy']);
+    Route::get('/staff/{staff}/permissions', [StaffController::class, 'editPermissions'])->name('staff.permissions.edit');
+    Route::patch('/staff/{staff}/permissions', [StaffController::class, 'updatePermissions'])->name('staff.permissions.update');
 
     Route::view('/projects', 'modules.coming-soon', [
         'title' => 'Projects',

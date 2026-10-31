@@ -13,25 +13,25 @@
         <div class="admin-form-grid">
             <div class="admin-field admin-field-wide">
                 <x-input-label for="name" value="Full name" class="admin-label" />
-                <input id="name" name="name" type="text" class="admin-input" value="{{ old('name', $staffMember->name ?? '') }}" required autofocus>
+                <input id="name" name="name" type="text" class="admin-input" value="{{ old('name', $staffMember->name ?? request('name', '')) }}" required autofocus>
                 <x-input-error class="admin-error" :messages="$errors->get('name')" />
             </div>
 
             <div class="admin-field">
                 <x-input-label for="email" value="Email" class="admin-label" />
-                <input id="email" name="email" type="email" @class(['admin-input', 'admin-input-readonly' => $isProtectedSuperAdmin]) value="{{ old('email', $staffMember->email ?? '') }}" required @readonly($isProtectedSuperAdmin)>
+                <input id="email" name="email" type="email" @class(['admin-input', 'admin-input-readonly' => $isProtectedSuperAdmin]) value="{{ old('email', $staffMember->email ?? request('email', '')) }}" required @readonly($isProtectedSuperAdmin)>
                 <x-input-error class="admin-error" :messages="$errors->get('email')" />
             </div>
 
             <div class="admin-field">
                 <x-input-label for="phone" value="Phone" class="admin-label" />
-                <input id="phone" name="phone" type="text" class="admin-input" value="{{ old('phone', $staffMember->phone ?? '') }}">
+                <input id="phone" name="phone" type="text" class="admin-input" value="{{ old('phone', $staffMember->phone ?? request('phone', '')) }}">
                 <x-input-error class="admin-error" :messages="$errors->get('phone')" />
             </div>
 
             <div class="admin-field">
                 <x-input-label for="designation" value="Designation" class="admin-label" />
-                <input id="designation" name="designation" type="text" class="admin-input" value="{{ old('designation', $staffMember->designation ?? '') }}">
+                <input id="designation" name="designation" type="text" class="admin-input" value="{{ old('designation', $staffMember->designation ?? request('designation', '')) }}">
                 <x-input-error class="admin-error" :messages="$errors->get('designation')" />
             </div>
 

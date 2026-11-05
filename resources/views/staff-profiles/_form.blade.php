@@ -26,12 +26,10 @@
                 </select>
                 @error('employment_status')<span class="staff-form-error">{{ $message }}</span>@enderror
             </label>
+            @php($staffTypes = ['Project Director', 'Deputy Project Director', 'Subject Specialist', 'Project Coordinator', 'Technical Officer', 'MIS Officer'])
             @php($fields = [
-                ['staff_type', 'Staff Type', 'text', true, 'e.g. Permanent, Contract'],
                 ['name_with_initials', 'Name with Initials', 'text', true, 'Enter name with initials'],
                 ['nic_number', 'NIC Number', 'text', true, 'Enter NIC number'],
-                ['grade', 'Grade', 'text', false, 'Enter grade'],
-                ['designation', 'Designation', 'text', true, 'Enter designation'],
                 ['contact_number', 'Contact Number', 'tel', false, 'Enter contact number'],
                 ['mobile_fixed', 'Mobile / Fixed Number', 'tel', false, 'Enter mobile or fixed number'],
                 ['official_email', 'Official Email Address', 'email', false, 'Enter official email'],
@@ -48,6 +46,16 @@
                     @error($name)<span class="staff-form-error">{{ $message }}</span>@enderror
                 </label>
             @endforeach
+            <label class="staff-form-field">
+                <span class="staff-form-label">Staff Type <span class="staff-form-required">*</span></span>
+                <select name="staff_type" required @class(['staff-form-control', 'staff-form-control-error' => $errors->has('staff_type')])>
+                    <option value="">Select staff type</option>
+                    @foreach ($staffTypes as $option)
+                        <option value="{{ $option }}" @selected(old('staff_type', $editing ? $profile->staff_type : '') === $option)>{{ $option }}</option>
+                    @endforeach
+                </select>
+                @error('staff_type')<span class="staff-form-error">{{ $message }}</span>@enderror
+            </label>
             <label class="staff-form-field">
                 <span class="staff-form-label">Gender</span>
                 <select name="gender" class="staff-form-control">

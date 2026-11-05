@@ -32,10 +32,8 @@
                     <div class="staff-record-heading">
                         <p class="staff-record-eyebrow">Employee record #{{ str_pad((string) $profile->id, 5, '0', STR_PAD_LEFT) }}</p>
                         <h2>{{ $profile->name_with_initials }}</h2>
-                        <p class="staff-record-designation">{{ $profile->designation }}</p>
                         <div class="staff-record-tags">
                             <span>{{ $profile->staff_type }}</span>
-                            @if($profile->grade)<span>Grade {{ $profile->grade }}</span>@endif
                         </div>
                     </div>
                 </div>
@@ -47,7 +45,7 @@
             <div class="staff-record-grid">
                 @foreach([
                     'Personal information' => ['NIC Number' => $profile->nic_number, 'Date of Birth' => $profile->date_of_birth?->format('d M Y'), 'Gender' => $profile->gender, 'Permanent Address' => $profile->permanent_address],
-                    'Employment details' => ['Designation' => $profile->designation, 'Staff Type' => $profile->staff_type, 'Grade' => $profile->grade, 'First Appointment Date' => $profile->first_appointment_date?->format('d M Y'), 'W and OP Number' => $profile->w_op_number, 'Personal File Number' => $profile->personal_file_number],
+                    'Employment details' => ['Staff Type' => $profile->staff_type, 'First Appointment Date' => $profile->first_appointment_date?->format('d M Y'), 'W and OP Number' => $profile->w_op_number, 'Personal File Number' => $profile->personal_file_number],
                     'Contact information' => ['Official Email Address' => $profile->official_email, 'Contact Number' => $profile->contact_number, 'Mobile / Fixed Number' => $profile->mobile_fixed],
                     'Education' => ['Highest Education Qualifications' => $profile->highest_education_qualifications],
                 ] as $section => $items)

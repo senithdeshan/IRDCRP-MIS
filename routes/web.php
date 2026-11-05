@@ -14,6 +14,7 @@ use App\Http\Controllers\IrrigationInfrastructureExcelController;
 use App\Http\Controllers\CercInfrastructureAssetController;
 use App\Http\Controllers\CercInfrastructureExcelController;
 use App\Http\Controllers\CercFarmerOrganizationController;
+use App\Models\StaffProfile;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
 
@@ -22,7 +23,7 @@ Route::redirect('/', '/login');
 Route::get('/dashboard', function () {
     return view('dashboard', [
         'staffCount' => User::count(),
-        'activeStaffCount' => User::where('status', 'active')->count(),
+        'activeStaffCount' => StaffProfile::where('employment_status', 'In service')->count(),
     ]);
 })->middleware(['auth', 'verified'])->name('dashboard');
 

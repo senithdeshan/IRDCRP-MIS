@@ -18,6 +18,7 @@ class UserManagementController extends Controller
             'profiles' => $profiles,
             'usersByEmail' => $usersByEmail,
             'canManageUsers' => $request->user()->isSuperAdmin() || in_array($request->user()->role, ['admin', 'administrator'], true),
+            'canManagePermissions' => $request->user()->isSuperAdmin(),
         ]);
     }
 }

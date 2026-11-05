@@ -38,14 +38,14 @@
         </div>
         <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
             <div class="overflow-x-auto"><table class="min-w-full divide-y divide-slate-100">
-                <thead class="bg-slate-50"><tr>@foreach(['Staff member', 'Staff type', 'NIC number', 'Designation', 'Contact', 'Employment status', ''] as $heading)<th scope="col" class="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">{{ $heading }}</th>@endforeach</tr></thead>
+                <thead class="bg-slate-50"><tr>@foreach(['Staff member', 'Staff type', 'NIC number', 'Official email', 'Contact', 'Employment status', ''] as $heading)<th scope="col" class="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">{{ $heading }}</th>@endforeach</tr></thead>
                 <tbody class="divide-y divide-slate-100">
                     @forelse($profiles as $profile)
                         <tr class="transition hover:bg-slate-50/70">
                             <td class="whitespace-nowrap px-5 py-4"><div class="flex items-center gap-3">@if($profile->photo_path)<img src="{{ route('staff-profiles.document', [$profile, 'photo']) }}" alt="" class="h-10 w-10 rounded-full object-cover ring-1 ring-slate-200">@else<div class="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-50 text-sm font-bold text-emerald-800">{{ Str::upper(Str::substr($profile->name_with_initials, 0, 1)) }}</div>@endif<div><p class="text-sm font-semibold text-slate-900">{{ $profile->name_with_initials }}</p><p class="text-xs text-slate-500">{{ $profile->official_email ?: 'No official email' }}</p></div></div></td>
                             <td class="whitespace-nowrap px-5 py-4"><span class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700">{{ $profile->staff_type }}</span></td>
                             <td class="whitespace-nowrap px-5 py-4 text-sm text-slate-600">{{ $profile->nic_number }}</td>
-                            <td class="whitespace-nowrap px-5 py-4 text-sm text-slate-600">{{ $profile->designation }}</td>
+                            <td class="whitespace-nowrap px-5 py-4 text-sm text-slate-600">{{ $profile->official_email ?: '—' }}</td>
                             <td class="whitespace-nowrap px-5 py-4 text-sm text-slate-600">{{ $profile->contact_number ?: '—' }}</td>
                             <td class="whitespace-nowrap px-5 py-4"><span @class(['rounded-full px-2.5 py-1 text-xs font-semibold', 'bg-emerald-50 text-emerald-800' => $profile->employment_status === 'In service', 'bg-rose-50 text-rose-700' => $profile->employment_status === 'Resigned'])>{{ $profile->employment_status }}</span></td>
                             <td class="whitespace-nowrap px-5 py-4 text-right"><a href="{{ route('staff-profiles.show', $profile) }}" class="text-sm font-semibold text-emerald-700 hover:text-emerald-900">View profile <span aria-hidden="true">→</span></a></td>

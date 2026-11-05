@@ -154,13 +154,11 @@ class StaffProfileController extends Controller
 
     private function validated(Request $request, ?StaffProfile $profile = null): array
     {
-        return $request->validate([
-            'staff_type' => ['required', 'string', 'max:100'],
+        $data = $request->validate([
+            'staff_type' => ['required', Rule::in(['Project Director', 'Deputy Project Director', 'Subject Specialist', 'Project Coordinator', 'Technical Officer', 'MIS Officer'])],
             'employment_status' => ['required', Rule::in(['In service', 'Resigned'])],
             'name_with_initials' => ['required', 'string', 'max:255'],
             'nic_number' => ['required', 'string', 'max:30', new SriLankanNic, Rule::unique('staff_profiles', 'nic_number')->ignore($profile)],
-            'grade' => ['nullable', 'string', 'max:100'],
-            'designation' => ['required', 'string', 'max:255'],
             'permanent_address' => ['nullable', 'string', 'max:2000'],
             'contact_number' => ['nullable', 'string', 'max:30'],
             'mobile_fixed' => ['nullable', 'string', 'max:30'],
@@ -175,6 +173,11 @@ class StaffProfileController extends Controller
             'appointment_letter' => ['nullable', 'file', 'mimes:pdf', 'max:10240'],
             'cv' => ['nullable', 'file', 'mimes:pdf,doc,docx', 'max:10240'],
         ]);
+
+        // The database still requires designation; keep it aligned with the selected staff type.
+        $data['designation'] = $data['staff_type'];
+
+        return $data;
     }
 
     private function canManage(Request $request): bool

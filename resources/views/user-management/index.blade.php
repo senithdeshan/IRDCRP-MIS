@@ -42,8 +42,10 @@
                                     <td class="px-5 py-4 text-sm text-slate-600">{{ $profile->official_email ?: 'No official email recorded' }}</td>
                                     <td class="px-5 py-4 text-sm text-slate-600">{{ $profile->designation ?: 'Not provided' }}</td>
                                     <td class="whitespace-nowrap px-5 py-3.5 text-right">
-                                        @if ($account && ! $account->isProtectedSuperAdmin())
+                                        @if ($account && ! $account->isProtectedSuperAdmin() && $canManagePermissions)
                                             <a href="{{ route('staff.permissions.edit', $account) }}" class="inline-flex items-center justify-center rounded-lg bg-emerald-700 px-3.5 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-emerald-800 focus:outline-none focus:ring-4 focus:ring-emerald-700/20">Manage Permissions</a>
+                                        @elseif ($account && ! $account->isProtectedSuperAdmin())
+                                            <button type="button" data-permission-denied class="inline-flex items-center justify-center rounded-lg bg-emerald-700 px-3.5 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-emerald-800 focus:outline-none focus:ring-4 focus:ring-emerald-700/20">Manage Permissions</button>
                                         @elseif ($account)
                                             <span class="inline-flex items-center rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-800">Protected account</span>
                                         @elseif ($profile->official_email && $canManageUsers)
@@ -75,4 +77,27 @@
             </div>
         </div>
     </section>
+
+    <dialog id="permission-denied-modal" aria-labelledby="permission-denied-title" class="w-[calc(100%-2rem)] max-w-md rounded-2xl border border-slate-200 bg-white p-0 text-slate-900 shadow-2xl backdrop:bg-slate-950/50">
+        <div class="p-6 text-center sm:p-8">
+            <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-amber-100 text-amber-700" aria-hidden="true">
+                <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m0 3h.008v.008H12V15.75Zm9-3.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>
+            </div>
+            <h2 id="permission-denied-title" class="mt-4 text-lg font-semibold">Permission required</h2>
+            <p class="mt-2 text-sm leading-6 text-slate-600">Only Super Admin users can manage permissions.</p>
+            <button type="button" data-close-permission-modal class="mt-6 inline-flex min-w-24 items-center justify-center rounded-lg bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-800 focus:outline-none focus:ring-4 focus:ring-emerald-700/20">OK</button>
+        </div>
+    </dialog>
+
+    <script>
+        const permissionDeniedModal = document.getElementById('permission-denied-modal');
+
+        document.querySelectorAll('[data-permission-denied]').forEach((button) => {
+            button.addEventListener('click', () => permissionDeniedModal.showModal());
+        });
+
+        document.querySelector('[data-close-permission-modal]')?.addEventListener('click', () => {
+            permissionDeniedModal.close();
+        });
+    </script>
 </x-app-layout>

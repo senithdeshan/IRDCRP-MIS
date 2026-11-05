@@ -95,6 +95,8 @@ class StaffController extends Controller
 
     public function editPermissions(User $staff): View
     {
+        $this->authorizeSuperAdmin(request());
+
         abort_if($staff->isProtectedSuperAdmin(), 403);
 
         return view('staff.permissions', [
@@ -107,6 +109,8 @@ class StaffController extends Controller
 
     public function updatePermissions(Request $request, User $staff): RedirectResponse
     {
+        $this->authorizeSuperAdmin($request);
+
         abort_if($staff->isProtectedSuperAdmin(), 403);
 
         $matrixKeys = $this->permissionMatrixKeys();
@@ -223,5 +227,10 @@ class StaffController extends Controller
     private function authorizeManagement(Request $request): void
     {
         abort_unless($request->user()->isSuperAdmin() || in_array($request->user()->role, ['admin', 'administrator'], true), 403);
+    }
+
+    private function authorizeSuperAdmin(Request $request): void
+    {
+        abort_unless($request->user()->isSuperAdmin(), 403);
     }
 }

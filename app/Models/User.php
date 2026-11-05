@@ -7,6 +7,7 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use App\Notifications\MisPasswordResetNotification;
 
 class User extends Authenticatable
 {
@@ -62,5 +63,10 @@ class User extends Authenticatable
     {
         return $this->isSuperAdmin()
             && strcasecmp($this->email, config('app.protected_super_admin_email', 'admin@irdcrp.lk')) === 0;
+    }
+
+    public function sendPasswordResetNotification($token): void
+    {
+        $this->notify(new MisPasswordResetNotification($token));
     }
 }

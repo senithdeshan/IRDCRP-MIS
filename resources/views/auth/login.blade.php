@@ -45,8 +45,12 @@
                         required
                         autocomplete="current-password"
                         placeholder="Enter your password"
-                        class="auth-input @error('password') auth-input-error @enderror"
+                        class="auth-input auth-password-input @error('password') auth-input-error @enderror"
                     />
+                    <button type="button" class="auth-password-toggle" id="toggle-password" aria-label="Show password" aria-pressed="false" aria-controls="password">
+                        <svg class="password-eye-show" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12s3.5-6.75 9.75-6.75S21.75 12 21.75 12 18.25 18.75 12 18.75 2.25 12 2.25 12Z"/><circle cx="12" cy="12" r="3"/></svg>
+                        <svg class="password-eye-hide" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true" hidden><path stroke-linecap="round" stroke-linejoin="round" d="m3 3 18 18M10.58 10.58a2 2 0 0 0 2.83 2.83"/><path stroke-linecap="round" stroke-linejoin="round" d="M9.88 5.24A10.9 10.9 0 0 1 12 5.04c6.25 0 9.75 6.96 9.75 6.96a16.8 16.8 0 0 1-3.02 3.77M6.23 6.23C3.69 7.98 2.25 12 2.25 12s3.5 6.96 9.75 6.96c1.12 0 2.14-.25 3.05-.66"/></svg>
+                    </button>
                 </div>
                 <x-input-error :messages="$errors->get('password')" class="auth-error" />
             </div>
@@ -79,4 +83,16 @@
             <a href="{{ route('register') }}" class="auth-link auth-link-bold">{{ __('Register here') }}</a>
         </p>
     </div>
+    <script>
+        document.getElementById('toggle-password')?.addEventListener('click', function () {
+            const password = document.getElementById('password');
+            const isVisible = password.type === 'text';
+
+            password.type = isVisible ? 'password' : 'text';
+            this.setAttribute('aria-pressed', String(!isVisible));
+            this.setAttribute('aria-label', isVisible ? 'Show password' : 'Hide password');
+            this.querySelector('.password-eye-show').hidden = !isVisible;
+            this.querySelector('.password-eye-hide').hidden = isVisible;
+        });
+    </script>
 </x-guest-layout>

@@ -2981,6 +2981,43 @@ a[href], button, input, select, textarea, summary, [role="button"] {
         transition: background 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
     }
 
+    .auth-password-input {
+        padding-right: 2.8rem;
+    }
+
+    .auth-password-toggle {
+        position: absolute;
+        top: 50%;
+        right: 0.7rem;
+        display: inline-flex;
+        width: 1.35rem;
+        height: 1.35rem;
+        align-items: center;
+        justify-content: center;
+        border: 0;
+        padding: 0;
+        background: transparent;
+        color: rgb(100 116 139);
+        cursor: pointer;
+        transform: translateY(-50%);
+    }
+
+    .auth-password-toggle:hover,
+    .auth-password-toggle:focus-visible {
+        color: rgb(15 118 110);
+    }
+
+    .auth-password-toggle:focus-visible {
+        border-radius: 0.2rem;
+        outline: 2px solid currentColor;
+        outline-offset: 2px;
+    }
+
+    .auth-password-toggle svg {
+        width: 100%;
+        height: 100%;
+    }
+
     .auth-input::placeholder {
         color: rgb(148 163 184);
     }

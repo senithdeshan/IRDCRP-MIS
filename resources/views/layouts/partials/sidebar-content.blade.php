@@ -2,7 +2,7 @@
     <div class="sidebar-brand-area">
         <a href="{{ route('dashboard') }}" class="sidebar-brand">
             <span class="brand-mark h-12 w-12">
-                <img src="{{ asset('images/logos/irdcrp-logo.svg') }}" alt="" class="h-10 w-10 object-contain">
+                <x-application-logo class="h-10 w-10" />
             </span>
             <span>
                 <span class="sidebar-brand-title">IRDCRP MIS</span>
@@ -196,20 +196,20 @@
     </nav>
 
     <div class="p-4">
-        @php
-            $userName = Auth::user()->name;
-            $userInitials = collect(explode(' ', trim($userName)))
-                ->filter()
-                ->map(fn ($part) => strtoupper(substr($part, 0, 1)))
-                ->take(2)
-                ->implode('');
-        @endphp
-
         <div class="profile-panel">
             <div class="profile-user">
-                <span class="profile-avatar">{{ $userInitials ?: 'U' }}</span>
+                <span class="profile-avatar">
+                    @if ($layoutUserPhotoUrl)
+                        <img src="{{ $layoutUserPhotoUrl }}" alt="{{ 'Photo of '.$layoutUserName }}" class="profile-avatar-photo">
+                    @elseif ($layoutUser->isProtectedSuperAdmin())
+                        <img src="{{ asset('images/logos/super-admin-badge.svg') }}" alt="Super Admin" class="profile-avatar-badge">
+                    @else
+                        {{ $layoutUserInitials }}
+                    @endif
+                </span>
                 <span class="min-w-0">
-                    <span class="profile-name">{{ $userName }}</span>
+                    <span class="profile-name" title="{{ $layoutUserName }}">{{ $layoutUserName }}</span>
+                    <span class="profile-staff-type" title="{{ $layoutStaffType }}">{{ $layoutStaffType }}</span>
                     <span class="profile-email">{{ Auth::user()->email }}</span>
                 </span>
             </div>

@@ -7,11 +7,13 @@
             </div>
             <div class="flex flex-wrap gap-2">
                 <a href="{{ route('staff-profiles.index') }}" class="rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">Back to directory</a>
+                @if($canManage)
                 <form method="POST" action="{{ route('staff-profiles.destroy', $profile) }}" data-confirm-title="Delete this staff profile?" data-confirm-message="{{ $profile->name_with_initials }}'s profile and uploaded documents will be permanently deleted." data-confirm-action="Yes, delete" data-confirm-cancel="No, keep profile" data-confirm-tone="rose">
                     @csrf @method('DELETE')
                     <button type="submit" class="rounded-lg bg-red-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700">Delete Profile</button>
                 </form>
                 <a href="{{ route('staff-profiles.edit', $profile) }}" class="rounded-lg bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-800">Edit profile</a>
+                @endif
             </div>
         </div>
     </x-slot>
@@ -47,6 +49,7 @@
                     'Personal information' => ['NIC Number' => $profile->nic_number, 'Date of Birth' => $profile->date_of_birth?->format('d M Y'), 'Gender' => $profile->gender, 'Permanent Address' => $profile->permanent_address],
                     'Employment details' => ['Staff Type' => $profile->staff_type, 'First Appointment Date' => $profile->first_appointment_date?->format('d M Y'), 'W and OP Number' => $profile->w_op_number, 'Personal File Number' => $profile->personal_file_number],
                     'Contact information' => ['Official Email Address' => $profile->official_email, 'Contact Number' => $profile->contact_number, 'Mobile / Fixed Number' => $profile->mobile_fixed],
+                    'MIS account access' => ['Registration Status' => $registeredAccount ? 'Registered' : ($profile->registration_enabled && $profile->employment_status === 'In service' ? 'Registration enabled' : 'Not enabled'), 'Registration Email' => $profile->official_email],
                     'Education' => ['Highest Education Qualifications' => $profile->highest_education_qualifications],
                 ] as $section => $items)
                     <section class="staff-record-card">

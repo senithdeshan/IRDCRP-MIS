@@ -42,6 +42,43 @@ class AuthenticationTest extends TestCase
         $this->assertGuest();
     }
 
+    public function test_inactive_staff_cannot_sign_in_even_with_the_correct_password(): void
+    {
+        $user = User::factory()->create(['status' => 'inactive']);
+
+        $this->post('/login', [
+            'email' => $user->email,
+            'password' => 'password',
+        ])->assertSessionHasErrors('email');
+
+        $this->assertGuest();
+    }
+
+    public function test_legacy_mixed_case_email_accepts_a_mixed_case_login(): void
+    {
+        $user = User::factory()->create(['email' => 'Legacy.Staff@Example.COM']);
+
+        $this->post('/login', [
+            'email' => ' LEGACY.staff@EXAMPLE.com ',
+            'password' => 'password',
+        ])->assertSessionHasNoErrors()
+            ->assertRedirect(route('dashboard', absolute: false));
+
+        $this->assertAuthenticatedAs($user);
+        $this->assertSame('Legacy.Staff@Example.COM', $user->fresh()->email);
+    }
+
+    public function test_malformed_login_email_returns_a_validation_error(): void
+    {
+        $this->postJson('/login', [
+            'email' => ['staff@example.com'],
+            'password' => 'password',
+        ])->assertUnprocessable()
+            ->assertJsonValidationErrors('email');
+
+        $this->assertGuest();
+    }
+
     public function test_users_can_logout(): void
     {
         $user = User::factory()->create();

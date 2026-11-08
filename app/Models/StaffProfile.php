@@ -13,6 +13,7 @@ class StaffProfile extends Model
         'date_of_birth', 'gender', 'w_op_number', 'highest_education_qualifications',
         'personal_file_number', 'first_appointment_date', 'photo_path', 'photo_name',
         'appointment_letter_path', 'appointment_letter_name', 'cv_path', 'cv_name', 'created_by',
+        'registration_enabled', 'user_id',
     ];
 
     protected function casts(): array
@@ -20,11 +21,17 @@ class StaffProfile extends Model
         return [
             'date_of_birth' => 'date',
             'first_appointment_date' => 'date',
+            'registration_enabled' => 'boolean',
         ];
     }
 
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 }

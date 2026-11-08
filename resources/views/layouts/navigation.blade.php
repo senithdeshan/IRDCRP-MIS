@@ -107,7 +107,7 @@
         <div class="flex h-16 items-center justify-between px-4">
             <a href="{{ route('dashboard') }}" class="flex items-center gap-3">
                 <span class="brand-mark h-10 w-10">
-                    <img src="{{ asset('images/logos/irdcrp-logo.svg') }}" alt="" class="h-8 w-8 object-contain">
+                    <x-application-logo class="h-8 w-8" />
                 </span>
                 <span>
                     <span class="block text-sm font-semibold text-slate-950">IRDCRP MIS</span>

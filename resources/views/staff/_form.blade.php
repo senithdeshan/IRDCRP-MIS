@@ -1,6 +1,7 @@
 @php
     $selectedPermissions = old('permissions', $staffMember->permissions ?? []);
     $isProtectedSuperAdmin = $mode === 'edit' && isset($staffMember) && $staffMember->isProtectedSuperAdmin();
+    $emailLocked = $isProtectedSuperAdmin || (isset($staffMember) && $staffMember->staffProfile !== null);
 @endphp
 
 <div class="admin-access-shell">
@@ -19,8 +20,9 @@
 
             <div class="admin-field">
                 <x-input-label for="email" value="Email" class="admin-label" />
-                <input id="email" name="email" type="email" @class(['admin-input', 'admin-input-readonly' => $isProtectedSuperAdmin]) value="{{ old('email', $staffMember->email ?? request('email', '')) }}" required @readonly($isProtectedSuperAdmin)>
+                <input id="email" name="email" type="email" @class(['admin-input', 'admin-input-readonly' => $emailLocked]) value="{{ old('email', $staffMember->email ?? request('email', '')) }}" required @readonly($emailLocked)>
                 <x-input-error class="admin-error" :messages="$errors->get('email')" />
+                @if (isset($staffMember) && $staffMember->staffProfile)<p class="mt-2 text-xs text-slate-500">Linked to the official email in the staff profile.</p>@endif
             </div>
 
             <div class="admin-field">

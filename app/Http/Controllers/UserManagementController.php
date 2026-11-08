@@ -11,13 +11,13 @@ class UserManagementController extends Controller
 {
     public function index(Request $request): View
     {
-        $profiles = StaffProfile::query()->orderBy('id')->get();
+        $profiles = StaffProfile::query()->with('user')->orderBy('id')->get();
         $usersByEmail = User::query()->whereNotNull('email')->get()->keyBy(fn (User $user) => mb_strtolower($user->email));
 
         return view('user-management.index', [
             'profiles' => $profiles,
             'usersByEmail' => $usersByEmail,
-            'canManageUsers' => $request->user()->isSuperAdmin() || in_array($request->user()->role, ['admin', 'administrator'], true),
+            'canManageUsers' => $request->user()->isSuperAdmin(),
             'canManagePermissions' => $request->user()->isSuperAdmin(),
         ]);
     }

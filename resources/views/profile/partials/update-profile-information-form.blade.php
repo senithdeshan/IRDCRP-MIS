@@ -25,8 +25,11 @@
 
         <div>
             <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" name="email" type="email" class="mt-1 block w-full" :value="old('email', $user->email)" required autocomplete="username" />
+            <x-text-input id="email" name="email" type="email" class="mt-1 block w-full" :value="old('email', $user->email)" :readonly="$user->staffProfile !== null || $user->isProtectedSuperAdmin()" required autocomplete="username" />
             <x-input-error class="mt-2" :messages="$errors->get('email')" />
+            @if ($user->staffProfile)
+                <p class="mt-2 text-sm text-gray-600">Your login email is linked to the official email in your staff profile.</p>
+            @endif
 
             @if ($user instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && ! $user->hasVerifiedEmail())
                 <div>

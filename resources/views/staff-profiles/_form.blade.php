@@ -42,8 +42,10 @@
                 <label class="staff-form-field">
                     <span class="staff-form-label">{{ $label }} @if($required)<span class="staff-form-required">*</span>@endif</span>
                     <input name="{{ $name }}" type="{{ $type }}" value="{{ old($name, $editing ? ($type === 'date' ? $profile->{$name}?->format('Y-m-d') : $profile->{$name}) : '') }}" placeholder="{{ $placeholder }}" @required($required)
+                        @readonly($name === 'official_email' && $editing && $profile->user_id)
                         @class(['staff-form-control', 'staff-form-control-error' => $errors->has($name)])>
                     @error($name)<span class="staff-form-error">{{ $message }}</span>@enderror
+                    @if($name === 'official_email')<span class="staff-form-hint">{{ $editing && $profile->user_id ? 'This email is linked to the registered account.' : 'Required when enabling registration. Each staff member must use a unique official email.' }}</span>@endif
                 </label>
             @endforeach
             <label class="staff-form-field">
@@ -93,9 +95,45 @@
         </div>
     </section>
 
+    <section class="staff-form-section">
+        <div class="staff-form-section-heading">
+            <span class="staff-form-section-number">03</span>
+            <div><h2>MIS registration access</h2>
+            <p>The super admin approves the official email before the staff member registers.</p></div>
+        </div>
+        <input type="hidden" name="registration_enabled" value="0">
+        @if($editing && $registeredAccount)
+            <div class="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900">
+                <p class="font-semibold">Account registered</p>
+                <p class="mt-1">{{ $profile->user_id ? 'This profile is already linked to an account.' : 'An account already exists for this official email.' }} Manage its role, status, and permissions in User Management.</p>
+                <a href="{{ route('user-management.index') }}" class="mt-3 inline-flex font-semibold underline">Open User Management</a>
+            </div>
+        @else
+            <label class="flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <input id="registration_enabled" type="checkbox" name="registration_enabled" value="1" @checked(old('registration_enabled', $editing ? $profile->registration_enabled : false)) class="mt-1 rounded border-slate-300 text-emerald-700 focus:ring-emerald-600" aria-describedby="registration-access-help">
+                <span>
+                    <span class="block text-sm font-semibold text-slate-900">Allow staff account registration</span>
+                    <span id="registration-access-help" class="mt-1 block text-sm leading-6 text-slate-600">Enter the official email above and set Employment Status to In service. After saving, the staff member can choose Register on the login page, check this email, and create a password.</span>
+                    <span class="mt-2 block text-xs leading-5 text-slate-500">New accounts receive the Staff role. The super admin can assign permissions in User Management after registration.</span>
+                </span>
+            </label>
+        @endif
+        @error('registration_enabled')<p class="staff-form-error mt-2">{{ $message }}</p>@enderror
+    </section>
+
     <div class="staff-form-footer">
         <p><span>*</span> Required information</p>
         <div><a href="{{ route('staff-profiles.index') }}" class="staff-form-cancel">Cancel</a>
         <button type="submit" class="staff-form-submit">{{ $editing ? 'Save Changes' : 'Register Staff Profile' }} <span aria-hidden="true">→</span></button></div>
     </div>
 </form>
+<script>
+    (() => {
+        const registrationAccess = document.getElementById('registration_enabled');
+        const officialEmail = document.querySelector('input[name="official_email"]');
+        if (!registrationAccess || !officialEmail) return;
+        const updateEmailRequirement = () => { officialEmail.required = registrationAccess.checked; };
+        registrationAccess.addEventListener('change', updateEmailRequirement);
+        updateEmailRequirement();
+    })();
+</script>

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use Closure;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -125,26 +126,18 @@ class StaffController extends Controller
         return redirect()->route('user-management.index')->with('status', 'Permissions updated successfully.');
     }
 
-    public function create(): View
+    public function create(): RedirectResponse
     {
         $this->authorizeManagement(request());
 
-        return view('staff.create', [
-            'roles' => $this->assignableRoles(),
-            'permissions' => self::PERMISSIONS,
-        ]);
+        return redirect()->route('staff-profiles.create');
     }
 
     public function store(Request $request): RedirectResponse
     {
         $this->authorizeManagement($request);
 
-        $data = $this->validated($request);
-        $data['permissions'] = $request->input('permissions', []);
-
-        User::create($data);
-
-        return redirect()->route('staff.index')->with('status', 'Staff member created successfully.');
+        abort(403, 'Create a staff profile and enable registration. The staff member must register using their approved official email.');
     }
 
     public function edit(User $staff): View
@@ -194,9 +187,30 @@ class StaffController extends Controller
 
     private function validated(Request $request, ?User $staff = null): array
     {
+        if (! $staff?->isProtectedSuperAdmin() && is_string($request->input('email'))) {
+            $request->merge(['email' => mb_strtolower(trim($request->input('email')))]);
+        }
+
         return $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255', Rule::unique('users')->ignore($staff)],
+            'email' => [
+                'bail', 'required', 'string', 'email', 'max:255',
+                function (string $attribute, mixed $value, Closure $fail) use ($staff): void {
+                    $duplicate = User::query()
+                        ->whereRaw('LOWER(email) = ?', [mb_strtolower($value)])
+                        ->when($staff, fn ($query) => $query->whereKeyNot($staff->id))
+                        ->exists();
+
+                    if ($duplicate) {
+                        $fail('This email address is already assigned to another account.');
+                    }
+                },
+                function (string $attribute, mixed $value, Closure $fail) use ($staff): void {
+                    if ($staff?->staffProfile && strcasecmp($value, (string) $staff->staffProfile->official_email) !== 0) {
+                        $fail('The email must match the official email in the linked staff profile.');
+                    }
+                },
+            ],
             'designation' => ['nullable', 'string', 'max:255'],
             'phone' => ['nullable', 'string', 'max:30'],
             'role' => ['required', Rule::in(array_keys($staff?->isProtectedSuperAdmin() ? self::ROLES : $this->assignableRoles()))],
@@ -226,7 +240,7 @@ class StaffController extends Controller
 
     private function authorizeManagement(Request $request): void
     {
-        abort_unless($request->user()->isSuperAdmin() || in_array($request->user()->role, ['admin', 'administrator'], true), 403);
+        abort_unless($request->user()->isSuperAdmin(), 403);
     }
 
     private function authorizeSuperAdmin(Request $request): void

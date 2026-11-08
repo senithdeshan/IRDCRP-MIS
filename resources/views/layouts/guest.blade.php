@@ -39,7 +39,7 @@
                         <div class="auth-logo-strip" aria-label="Project partners">
                             <img src="{{ asset('images/logos/government-seal.png') }}" alt="Government of Sri Lanka" class="auth-logo auth-logo-seal">
                             <span class="auth-logo-divider"></span>
-                            <img src="{{ asset('images/logos/irdcrp-logo.png') }}" alt="IRDCRP" class="auth-logo auth-logo-irdcrp">
+                            <x-application-logo class="auth-logo auth-logo-irdcrp" />
                             <span class="auth-logo-divider"></span>
                             <img src="{{ asset('images/logos/world-bank.png') }}" alt="The World Bank" class="auth-logo auth-logo-world-bank">
                         </div>

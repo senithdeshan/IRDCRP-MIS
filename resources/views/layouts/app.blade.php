@@ -19,14 +19,6 @@
         <div class="min-h-screen lg:pl-72">
             @include('layouts.navigation')
 
-            @php
-                $layoutUser = Auth::user();
-                $layoutUserName = $layoutUser?->isProtectedSuperAdmin() ? 'Super Admin' : $layoutUser?->name;
-                $layoutRole = $layoutUser?->isProtectedSuperAdmin()
-                    ? 'Super Administrator'
-                    : ucwords(str_replace('_', ' ', $layoutUser?->role ?? 'Staff'));
-            @endphp
-
             @auth
                 <div class="app-topbar">
                     <div class="app-topbar-inner">
@@ -40,16 +32,18 @@
                         </div>
 
                         <div class="app-topbar-profile">
-                            <a href="{{ route('profile.edit') }}" class="app-topbar-avatar" aria-label="Open profile">
-                                @if ($layoutUser->isProtectedSuperAdmin())
-                                    <img src="{{ asset('images/logos/super-admin-badge.svg') }}" alt="Super Admin">
+                            <a href="{{ route('profile.edit') }}" class="app-topbar-avatar" aria-label="{{ 'Open profile for '.$layoutUserName }}">
+                                @if ($layoutUserPhotoUrl)
+                                    <img src="{{ $layoutUserPhotoUrl }}" alt="{{ 'Photo of '.$layoutUserName }}" class="app-topbar-photo">
+                                @elseif ($layoutUser->isProtectedSuperAdmin())
+                                    <img src="{{ asset('images/logos/super-admin-badge.svg') }}" alt="Super Admin" class="app-topbar-badge">
                                 @else
-                                    {{ collect(explode(' ', trim($layoutUser->name)))->filter()->map(fn ($part) => strtoupper(substr($part, 0, 1)))->take(2)->implode('') ?: 'U' }}
+                                    {{ $layoutUserInitials }}
                                 @endif
                             </a>
-                            <a href="{{ route('profile.edit') }}" class="app-topbar-user">
-                                <span>{{ $layoutUserName }}</span>
-                                <small>{{ $layoutRole }}</small>
+                            <a href="{{ route('profile.edit') }}" class="app-topbar-user" aria-label="{{ $layoutUserName.', '.$layoutStaffType.'. Open profile' }}">
+                                <span title="{{ $layoutUserName }}">{{ $layoutUserName }}</span>
+                                <small title="{{ $layoutStaffType }}">{{ $layoutStaffType }}</small>
                             </a>
                         </div>
                     </div>

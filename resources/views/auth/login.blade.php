@@ -2,7 +2,7 @@
     <div class="auth-card">
         <div class="auth-card-header">
             <span class="auth-card-kicker">Secure access</span>
-            <h2 class="auth-card-title">Admin Login</h2>
+            <h2 class="auth-card-title">Staff Login</h2>
             <p class="auth-card-subtitle">Sign in with your official MIS credentials.</p>
         </div>
 
@@ -79,9 +79,10 @@
         </div>
 
         <p class="auth-switch">
-            {{ __("Don't have an account?") }}
-            <a href="{{ route('register') }}" class="auth-link auth-link-bold">{{ __('Register here') }}</a>
+            {{ __('Staff profile approved?') }}
+            <a href="{{ route('register') }}" class="auth-link auth-link-bold">{{ __('Register staff account') }}</a>
         </p>
+        <p class="mt-3 text-center text-xs text-slate-500">Ask the Super Admin to create your staff profile and enable registration for your official email.</p>
     </div>
     <script>
         document.getElementById('toggle-password')?.addEventListener('click', function () {

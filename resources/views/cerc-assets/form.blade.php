@@ -1,131 +1,183 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center sm:gap-4">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-                <p class="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">CERC · Sections A and B</p>
-                <h1 class="text-2xl font-semibold text-slate-950">{{ $editing ? 'Edit CERC Tank' : ($tankType === 'minor' ? 'Add Minor Tank' : 'Add Major Tank') }}</h1>
-                <p class="mt-1 text-sm text-slate-500">Enter scheme details and add one row for each CAC member.</p>
+                <p class="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">CERC · Minor Tank</p>
+                <h1 class="text-2xl font-semibold text-slate-950">{{ $editing ? 'Update Scheme Registration' : 'Scheme Registration' }}</h1>
+                <p class="mt-1 text-sm text-slate-500">Enter the scheme, location, cost, contract, and safeguard details.</p>
             </div>
-            <a href="{{ route('cerc-assets.index', ['tank_type' => $tankType]) }}" class="tank-rehab-secondary">Back to records</a>
+            <a href="{{ route('cerc-assets.index') }}" class="tank-rehab-secondary">Back to Scheme Details</a>
         </div>
     </x-slot>
 
     @php
-        $members = old('cac_members', $asset->exists ? $asset->cacMembers->map(fn ($member) => $member->only(['member_name', 'position', 'nic_number', 'gender', 'contact_number']))->all() : [['member_name' => '', 'position' => 'Member', 'nic_number' => '', 'gender' => '', 'contact_number' => '']]);
-        if (count($members) === 0) $members = [['member_name' => '', 'position' => 'Member', 'nic_number' => '', 'gender' => '', 'contact_number' => '']];
-        $firstCacMember = $asset->exists ? $asset->cacMembers->first() : null;
-        $textFields = [
-            'river_basin' => 'River Basin', 'river_basin_number' => 'River Basin - Number', 'tank_name' => 'Tank Name',
-            'tank_registration_number' => 'Tank Registration Number', 'cascade_name' => 'Tank Cascade Name', 'province' => 'Province',
-            'district' => 'District', 'ds_division' => 'DS Division', 'asc' => 'ASC', 'gn_division' => 'GN Division', 'gn_code' => 'GN Code',
-            'gn_division_families' => 'GN Division families - number',
+        $sections = [
+            'Scheme information' => [
+                'institution' => ['Institution', 'text'],
+                'programme_type' => ['Programme Type', 'text'],
+                'contract_status' => ['Contract Status', 'text'],
+                'tank_name' => ['Scheme Name', 'text', 'required'],
+                'category' => ['Category', 'text'],
+                'year' => ['Year', 'number', 'integer'],
+                'size' => ['Size', 'text'],
+                'lot' => ['Lot', 'text'],
+                'cluster' => ['Cluster', 'text'],
+            ],
+            'Estimated costs' => [
+                'civil_cost' => ['Civil Cost (LKR)', 'number', 'money'],
+                'preliminaries_cost' => ['Preliminaries (LKR)', 'number', 'money'],
+                'direct_cost' => ['Direct Cost (LKR)', 'number', 'money'],
+                'vat_18' => ['VAT 18% (LKR)', 'number', 'money'],
+                'contingencies_cost' => ['Contingencies (LKR)', 'number', 'money'],
+                'total_cost_estimate' => ['Total Cost Estimate (LKR)', 'number', 'money'],
+            ],
+            'Award and contract' => [
+                'awarded_civil_cost' => ['Awarded Amount - Civil Cost (LKR)', 'number', 'money'],
+                'awarded_preliminaries_cost' => ['Awarded Amount - Preliminaries (LKR)', 'number', 'money'],
+                'awarded_amount_without_vat_contingencies' => ['Awarded Amount without VAT & Contingencies (LKR)', 'number', 'money'],
+                'advance_imprest' => ['Advance / Imprest (LKR)', 'number', 'money'],
+                'provisional_sum' => ['Provisional Sum (LKR)', 'number', 'money'],
+                'date_of_award' => ['Date of Award', 'date'],
+                'agreement_sign_date' => ['Agreement Sign Date', 'date'],
+                'contract_period_days' => ['Contract Period (Days)', 'number', 'integer'],
+                'completion_date' => ['Completion Date', 'date'],
+                'contract_number' => ['Contract Number', 'text'],
+                'contractor_name' => ['Contractor Name', 'text'],
+                'contractor_address' => ['Contractor Address', 'textarea'],
+                'contractor_contact_number' => ['Contractor Contact Number', 'tel'],
+            ],
+            'Beneficiaries and command area' => [
+                'beneficiary_families' => ['Beneficiary Families', 'number', 'integer'],
+                'command_area_ac' => ['Command Area (Ac)', 'number', 'money'],
+            ],
+            'Environmental and social clearances' => [
+                'emp_clearance_received_date' => ['EMP Clearance Received Date', 'date'],
+                'smp_clearance_received_date' => ['SMP Clearance Received Date', 'date'],
+                'esmp_submitted_to_procurement_date' => ['Date of ESMP Submitted to Procurement Division', 'date'],
+            ],
         ];
-        $numericFields = [
-            'main_crop_cultivation' => ['Main crop cultivation', 'text', ''],
-            'tank_capacity_ac_ft' => ['Tank Capacity (ac.ft)', 'number', '0.01'],
-            'catchment_area_ha' => ['Catchment Area (ha)', 'number', '0.01'],
-            'irrigable_area_existing_ha' => ['Irrigable Area - Existing (ha)', 'number', '0.01'],
-            'irrigable_area_cultivated_ha' => ['Irrigable Area - Cultivated (ha)', 'number', '0.01'],
-            'tank_farmer_families' => ['Number of farmer families in the Tank', 'number', '1'],
-            'farmer_organization_families' => ['Number of farmer families in Farmer Organization', 'number', '1'],
-            'canal_length_left_bank_km' => ['Canal Length - Left Bank (Km)', 'number', '0.001'],
-            'canal_length_center_bank_km' => ['Canal Length - Center Bank (Km)', 'number', '0.001'],
-            'canal_length_right_bank_km' => ['Canal Length - Right Bank (Km)', 'number', '0.001'],
-        ];
+        $oldProvince = old('province', $asset->province ?? '');
+        $oldDistrict = old('district', $asset->district ?? '');
+        $oldDsDivision = old('ds_division', $asset->ds_division ?? '');
+        $savedLatitude = old('latitude', $asset->latitude ?? '');
+        $savedLongitude = old('longitude', $asset->longitude ?? '');
+        $mapCenterLatitude = old('latitude') ?: ($locationPoint['latitude'] ?? 7.8731);
+        $mapCenterLongitude = old('longitude') ?: ($locationPoint['longitude'] ?? 80.7718);
     @endphp
 
-    <section class="irrigation-module px-4 py-6 sm:px-6 lg:px-8">
-        <form method="POST" action="{{ $editing ? route('cerc-assets.update', $asset) : route('cerc-assets.store') }}" class="irrigation-asset-form mx-auto max-w-7xl space-y-6">
+    <section class="irrigation-module px-4 py-6 sm:px-6 lg:px-8" x-data="adminDivisionPicker(@js($administrativeDivisions), @js($oldProvince), @js($oldDistrict), @js($oldDsDivision))">
+        <form method="POST" enctype="multipart/form-data" action="{{ $editing ? route('cerc-assets.update', $asset) : route('cerc-assets.store') }}" class="mx-auto max-w-7xl space-y-6">
             @csrf
-            <input type="hidden" name="tank_type" value="{{ $tankType }}">
             @if ($editing) @method('PUT') @endif
 
             @if ($errors->any())
-                <div class="irrigation-validation-summary" role="alert" aria-live="assertive">
-                    <strong>Please review the highlighted fields.</strong>
-                    <ul>@foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
-                </div>
+                <div class="irrigation-validation-summary" role="alert"><strong>Please review the highlighted fields.</strong><ul>@foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>
             @endif
 
-            <div class="irrigation-form-card">
-                <div class="mb-6 border-b border-slate-100 pb-4"><h2 class="text-lg font-semibold text-slate-900">Section A: Scheme Details</h2><p class="mt-1 text-sm text-slate-500">Tank, location, irrigation and scheme information.</p></div>
-                <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                    @foreach ($textFields as $name => $label)
-                        <div>
-                            <label for="{{ $name }}" class="block text-sm font-medium text-slate-700">{{ $label }} @if ($name === 'tank_name')<span class="text-red-600">*</span>@endif</label>
-                            <input id="{{ $name }}" name="{{ $name }}" type="{{ $name === 'gn_division_families' ? 'number' : 'text' }}" @if ($name === 'gn_division_families') min="0" step="1" @endif value="{{ old($name, $asset->{$name}) }}" @required($name === 'tank_name') aria-invalid="{{ $errors->has($name) ? 'true' : 'false' }}" class="mt-1.5 block w-full rounded-lg border-slate-300 shadow-sm focus:border-emerald-600 focus:ring-emerald-600">
-                            <x-input-error class="mt-1" :messages="$errors->get($name)" />
-                        </div>
-                    @endforeach
-                    @foreach ($numericFields as $name => [$label, $type, $step])
-                        <div>
-                            <label for="{{ $name }}" class="block text-sm font-medium text-slate-700">{{ $label }}</label>
-                            <input id="{{ $name }}" name="{{ $name }}" type="{{ $type }}" @if ($type === 'number') min="0" step="{{ $step }}" @endif value="{{ old($name, $asset->{$name}) }}" aria-invalid="{{ $errors->has($name) ? 'true' : 'false' }}" class="mt-1.5 block w-full rounded-lg border-slate-300 shadow-sm focus:border-emerald-600 focus:ring-emerald-600">
-                            <x-input-error class="mt-1" :messages="$errors->get($name)" />
-                        </div>
-                    @endforeach
-                    <div>
-                        <label for="scheme_type_tank" class="block text-sm font-medium text-slate-700">Scheme Type - Tank</label>
-                        <select id="scheme_type_tank" name="scheme_type_tank" aria-invalid="{{ $errors->has('scheme_type_tank') ? 'true' : 'false' }}" class="mt-1.5 block w-full rounded-lg border-slate-300 shadow-sm"><option value="">Select</option>@foreach (['Major', 'Medium', 'Minor'] as $option)<option value="{{ $option }}" @selected(old('scheme_type_tank', $asset->scheme_type_tank) === $option)>{{ $option }}</option>@endforeach</select>
-                        <x-input-error class="mt-1" :messages="$errors->get('scheme_type_tank')" />
-                    </div>
-                    <div>
-                        <label for="scheme_type_anicut" class="block text-sm font-medium text-slate-700">Scheme Type - Anicut</label>
-                        <select id="scheme_type_anicut" name="scheme_type_anicut" aria-invalid="{{ $errors->has('scheme_type_anicut') ? 'true' : 'false' }}" class="mt-1.5 block w-full rounded-lg border-slate-300 shadow-sm"><option value="">Select</option>@foreach (['Large', 'Minor'] as $option)<option value="{{ $option }}" @selected(old('scheme_type_anicut', $asset->scheme_type_anicut) === $option)>{{ $option }}</option>@endforeach</select>
-                        <x-input-error class="mt-1" :messages="$errors->get('scheme_type_anicut')" />
-                    </div>
-                    <div>
-                        <label for="tank_status" class="block text-sm font-medium text-slate-700">Tank Status / Condition</label>
-                        <select id="tank_status" name="tank_status" aria-invalid="{{ $errors->has('tank_status') ? 'true' : 'false' }}" class="mt-1.5 block w-full rounded-lg border-slate-300 shadow-sm"><option value="">Select</option>@foreach (['Functional', 'Partially functional', 'Non-functional', 'Abandoned'] as $option)<option value="{{ $option }}" @selected(old('tank_status', $asset->tank_status) === $option)>{{ $option }}</option>@endforeach</select>
-                        <x-input-error class="mt-1" :messages="$errors->get('tank_status')" />
-                    </div>
+            <section class="irrigation-form-card">
+                <header class="mb-6 border-b border-slate-100 pb-4"><h2 class="text-lg font-semibold text-slate-900">Location</h2><p class="mt-1 text-sm text-slate-500">Choose the administrative area for this scheme.</p></header>
+                <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+                    <div><label for="province" class="block text-sm font-medium text-slate-700">Province</label><select id="province" name="province" x-model="province" @change="district = ''; dsDivision = ''; $refs.district.querySelectorAll('[data-initial-option]').forEach(option => option.remove()); $refs.dsDivision.querySelectorAll('[data-initial-option]').forEach(option => option.remove())" class="mt-1.5 block w-full rounded-lg border-slate-300 shadow-sm"><option value="">Select province</option>@foreach (array_keys($administrativeDivisions) as $province)<option value="{{ $province }}" @selected($oldProvince === $province)>{{ $province }}</option>@endforeach @if ($oldProvince && !array_key_exists($oldProvince, $administrativeDivisions))<option value="{{ $oldProvince }}" selected>{{ $oldProvince }} (saved)</option>@endif</select><x-input-error class="mt-1" :messages="$errors->get('province')" /></div>
+                    <div><label for="district" class="block text-sm font-medium text-slate-700">District</label><select id="district" name="district" x-ref="district" x-model="district" @change="dsDivision = ''; $refs.dsDivision.querySelectorAll('[data-initial-option]').forEach(option => option.remove())" class="mt-1.5 block w-full rounded-lg border-slate-300 shadow-sm"><option value="">Select district</option>@foreach (($administrativeDivisions[$oldProvince] ?? []) as $districtName => $dsdOptions)<option data-initial-option value="{{ $districtName }}" @selected($oldDistrict === $districtName)>{{ $districtName }}</option>@endforeach @if ($oldDistrict && !array_key_exists($oldDistrict, $administrativeDivisions[$oldProvince] ?? []))<option data-initial-option value="{{ $oldDistrict }}" selected>{{ $oldDistrict }} (saved)</option>@endif<template x-for="districtName in districts" :key="districtName"><option :value="districtName" x-text="districtName"></option></template></select><x-input-error class="mt-1" :messages="$errors->get('district')" /></div>
+                    <div><label for="ds_division" class="block text-sm font-medium text-slate-700">DSD</label><select id="ds_division" name="ds_division" x-ref="dsDivision" x-model="dsDivision" class="mt-1.5 block w-full rounded-lg border-slate-300 shadow-sm"><option value="">Select DSD</option>@foreach (($administrativeDivisions[$oldProvince][$oldDistrict] ?? []) as $dsdOption)<option data-initial-option value="{{ $dsdOption }}" @selected($oldDsDivision === $dsdOption)>{{ $dsdOption }}</option>@endforeach @if ($oldDsDivision && !in_array($oldDsDivision, $administrativeDivisions[$oldProvince][$oldDistrict] ?? [], true))<option data-initial-option value="{{ $oldDsDivision }}" selected>{{ $oldDsDivision }} (saved)</option>@endif<template x-for="division in dsDivisions" :key="division"><option :value="division" x-text="division"></option></template></select><x-input-error class="mt-1" :messages="$errors->get('ds_division')" /></div>
+                    <div><label for="asc" class="block text-sm font-medium text-slate-700">ASC</label><input id="asc" name="asc" value="{{ old('asc', $asset->asc) }}" class="mt-1.5 block w-full rounded-lg border-slate-300 shadow-sm"><x-input-error class="mt-1" :messages="$errors->get('asc')" /></div>
                 </div>
-            </div>
+                <div class="mt-6 rounded-2xl border border-emerald-100 bg-emerald-50/50 p-4 sm:p-5">
+                    <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+                        <div><h3 class="font-semibold text-slate-900">Pin the scheme on Sri Lanka map</h3><p class="mt-1 text-sm text-slate-600">Click the exact location on the map, or drag its pin to update coordinates.</p></div>
+                        <span id="cerc-map-coordinate-label" class="rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-slate-600">
+                            @if (filled($savedLatitude) && filled($savedLongitude))
+                                {{ number_format((float) $savedLatitude, 6) }}, {{ number_format((float) $savedLongitude, 6) }}
+                            @else
+                                Choose a location on the map
+                            @endif
+                        </span>
+                    </div>
+                    <input id="latitude" name="latitude" type="hidden" value="{{ $savedLatitude }}"><input id="longitude" name="longitude" type="hidden" value="{{ $savedLongitude }}">
+                    <div id="cerc-location-picker" class="h-[340px] overflow-hidden rounded-xl border border-emerald-100 shadow-sm" data-center-lat="{{ $mapCenterLatitude }}" data-center-lng="{{ $mapCenterLongitude }}" data-selected-lat="{{ $savedLatitude }}" data-selected-lng="{{ $savedLongitude }}" aria-label="Map for choosing the scheme location"></div>
+                    <x-input-error class="mt-2" :messages="$errors->get('latitude')" /><x-input-error class="mt-2" :messages="$errors->get('longitude')" />
+                </div>
+            </section>
 
-            <div class="irrigation-form-card" x-data="{ initialCount: {{ count($members) }}, extraCount: 0, addMember() { this.extraCount++; $nextTick(() => this.$refs.memberRows.lastElementChild?.scrollIntoView({behavior: 'smooth', block: 'nearest'})); } }">
-                <div class="mb-6 flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
-                    <div><h2 class="text-lg font-semibold text-slate-900">Section B: Cascade Action Committee (CAC)</h2><p class="mt-1 text-sm text-slate-500">Repeat the member details for each CAC member. NIC accepts 10 or 12 digits.</p></div>
-                    <button type="button" @click="addMember()" class="tank-rehab-secondary">+ Add member</button>
-                </div>
-                <div class="mb-5 grid gap-4 sm:grid-cols-2">
-                    <div><label for="cmc_name" class="block text-sm font-medium text-slate-700">CMC Name</label><input id="cmc_name" name="cmc_name" value="{{ old('cmc_name', $firstCacMember?->cmc_name) }}" aria-invalid="{{ $errors->has('cmc_name') ? 'true' : 'false' }}" class="mt-1.5 block w-full rounded-lg border-slate-300 shadow-sm"><x-input-error class="mt-1" :messages="$errors->get('cmc_name')" /></div>
-                    <div><label for="cac_name" class="block text-sm font-medium text-slate-700">CAC Name</label><input id="cac_name" name="cac_name" value="{{ old('cac_name', $firstCacMember?->cac_name) }}" aria-invalid="{{ $errors->has('cac_name') ? 'true' : 'false' }}" class="mt-1.5 block w-full rounded-lg border-slate-300 shadow-sm"><x-input-error class="mt-1" :messages="$errors->get('cac_name')" /></div>
-                </div>
-                <div x-ref="memberRows" class="space-y-4">
-                    @foreach ($members as $i => $member)
-                        <div data-cac-member class="irrigation-member-row" x-data="{ rowIndex: {{ $i }} }">
-                            <div class="mb-3 flex items-center justify-between"><h3 class="text-sm font-semibold text-slate-800">CAC Member <span x-text="rowIndex + 1">{{ $i + 1 }}</span></h3><button type="button" x-show="$root.querySelectorAll('[data-cac-member]').length > 1" @click="$el.closest('[data-cac-member]').remove()" class="text-sm font-medium text-red-600">Remove</button></div>
-                            <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                                <div><label class="block text-sm font-medium text-slate-700">CAC Member Name <span class="text-red-600">*</span></label><input name="cac_members[{{ $i }}][member_name]" value="{{ $member['member_name'] ?? '' }}" required aria-invalid="{{ $errors->has("cac_members.$i.member_name") ? 'true' : 'false' }}" class="mt-1.5 block w-full rounded-lg border-slate-300 shadow-sm focus:border-emerald-600 focus:ring-emerald-600"><x-input-error class="mt-1" :messages="$errors->get("cac_members.$i.member_name")" /></div>
-                                <div><label class="block text-sm font-medium text-slate-700">Member Position <span class="text-red-600">*</span></label><select name="cac_members[{{ $i }}][position]" required aria-invalid="{{ $errors->has("cac_members.$i.position") ? 'true' : 'false' }}" class="mt-1.5 block w-full rounded-lg border-slate-300 shadow-sm">@foreach (['Member', 'Co-chairperson'] as $option)<option value="{{ $option }}" @selected(($member['position'] ?? 'Member') === $option)>{{ $option }}</option>@endforeach</select><x-input-error class="mt-1" :messages="$errors->get("cac_members.$i.position")" /></div>
-                                <div><label class="block text-sm font-medium text-slate-700">Member NIC Number</label><input name="cac_members[{{ $i }}][nic_number]" inputmode="numeric" maxlength="12" value="{{ $member['nic_number'] ?? '' }}" aria-invalid="{{ $errors->has("cac_members.$i.nic_number") ? 'true' : 'false' }}" class="mt-1.5 block w-full rounded-lg border-slate-300 shadow-sm"><x-input-error class="mt-1" :messages="$errors->get("cac_members.$i.nic_number")" /></div>
-                                <div><label class="block text-sm font-medium text-slate-700">Member Gender</label><select name="cac_members[{{ $i }}][gender]" aria-invalid="{{ $errors->has("cac_members.$i.gender") ? 'true' : 'false' }}" class="mt-1.5 block w-full rounded-lg border-slate-300 shadow-sm"><option value="">Select</option>@foreach (['Male', 'Female'] as $option)<option value="{{ $option }}" @selected(($member['gender'] ?? '') === $option)>{{ $option }}</option>@endforeach</select><x-input-error class="mt-1" :messages="$errors->get("cac_members.$i.gender")" /></div>
-                                <div><label for="cac-member-contact-{{ $i }}" class="block text-sm font-medium text-slate-700">Member Contact Number</label><input id="cac-member-contact-{{ $i }}" name="cac_members[{{ $i }}][contact_number]" inputmode="numeric" maxlength="10" value="{{ $member['contact_number'] ?? '' }}" aria-invalid="{{ $errors->has("cac_members.$i.contact_number") ? 'true' : 'false' }}" @if ($errors->has("cac_members.$i.contact_number")) aria-describedby="cac-member-contact-error-{{ $i }}" @endif class="mt-1.5 block w-full rounded-lg border-slate-300 shadow-sm"><x-input-error id="cac-member-contact-error-{{ $i }}" class="mt-1" :messages="$errors->get("cac_members.$i.contact_number")" /></div>
+            @foreach ($sections as $sectionTitle => $fields)
+                <section class="irrigation-form-card">
+                    <header class="mb-6 border-b border-slate-100 pb-4"><h2 class="text-lg font-semibold text-slate-900">{{ $sectionTitle }}</h2></header>
+                    <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                        @foreach ($fields as $name => $field)
+                            @php([$label, $type] = $field)
+                            @php($step = $type === 'number' ? (($field[2] ?? '') === 'money' ? '0.01' : '1') : null)
+                            <div class="{{ $type === 'textarea' ? 'sm:col-span-2 lg:col-span-3' : '' }}">
+                                <label for="{{ $name }}" class="block text-sm font-medium text-slate-700">{{ $label }} @if (($field[2] ?? '') === 'required')<span class="text-red-600">*</span>@endif</label>
+                                @if ($type === 'textarea')
+                                    <textarea id="{{ $name }}" name="{{ $name }}" rows="3" class="mt-1.5 block w-full rounded-lg border-slate-300 shadow-sm">{{ old($name, $asset->{$name}) }}</textarea>
+                                @else
+                                    <input id="{{ $name }}" name="{{ $name }}" type="{{ $type }}" value="{{ old($name, $asset->{$name}) }}" @if ($type === 'number') min="0" step="{{ $step }}" @endif @required(($field[2] ?? '') === 'required') aria-invalid="{{ $errors->has($name) ? 'true' : 'false' }}" class="mt-1.5 block w-full rounded-lg border-slate-300 shadow-sm focus:border-emerald-600 focus:ring-emerald-600">
+                                @endif
+                                <x-input-error class="mt-1" :messages="$errors->get($name)" />
                             </div>
+                        @endforeach
+                    </div>
+                </section>
+            @endforeach
+
+            <section class="irrigation-form-card">
+                <header class="mb-6 border-b border-slate-100 pb-4"><h2 class="text-lg font-semibold text-slate-900">Construction progress and photos</h2><p class="mt-1 text-sm text-slate-500">Update progress and upload site evidence. Each photo slot accepts one image up to 10 MB.</p></header>
+                <div class="mb-6 max-w-md"><label for="progress" class="block text-sm font-medium text-slate-700">Progress (%)</label><div class="mt-1.5 flex items-center gap-3"><input id="progress" name="progress" type="number" min="0" max="100" step="0.01" value="{{ old('progress', $asset->progress) }}" class="block w-full rounded-lg border-slate-300 shadow-sm"><span class="font-semibold text-slate-500">%</span></div><x-input-error class="mt-1" :messages="$errors->get('progress')" /></div>
+                <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                    @foreach ([
+                        'before_work_photo' => ['Before work photo', 'before_work_photo_path'],
+                        'current_photo_1' => ['Current photo 1', 'current_photo_1_path'],
+                        'current_photo_2' => ['Current photo 2', 'current_photo_2_path'],
+                        'contractor_board_photo' => ['Contractor information board photo', 'contractor_board_photo_path'],
+                    ] as $input => [$label, $pathField])
+                        <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                            <label for="{{ $input }}" class="block text-sm font-semibold text-slate-800">{{ $label }}</label>
+                            @if ($editing && $asset->{$pathField})<a href="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($asset->{$pathField}) }}" target="_blank" class="mt-3 block overflow-hidden rounded-lg bg-white"><img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($asset->{$pathField}) }}" alt="Current {{ strtolower($label) }}" class="h-36 w-full object-cover"></a><p class="mt-2 text-xs text-slate-500">Current photo. Upload a replacement if needed.</p>@else<div class="mt-3 flex h-36 items-center justify-center rounded-lg border border-dashed border-slate-300 bg-white text-sm text-slate-400">No photo uploaded</div>@endif
+                            <input id="{{ $input }}" name="{{ $input }}" type="file" accept="image/*" class="mt-3 block w-full text-xs text-slate-600 file:mr-2 file:rounded-lg file:border-0 file:bg-emerald-100 file:px-3 file:py-2 file:font-semibold file:text-emerald-800">
+                            <x-input-error class="mt-1" :messages="$errors->get($input)" />
                         </div>
                     @endforeach
                 </div>
-                <template x-for="i in Array.from({length: extraCount}, (_, index) => initialCount + index)" :key="i">
-                    <div class="irrigation-member-row">
-                        <div class="mb-3 flex items-center justify-between"><h3 class="text-sm font-semibold text-slate-800">CAC Member <span x-text="i + 1"></span></h3><button type="button" @click="extraCount--" class="text-sm font-medium text-red-600">Remove</button></div>
-                        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                            <div><label class="block text-sm font-medium text-slate-700">CAC Member Name <span class="text-red-600">*</span></label><input :name="`cac_members[${i}][member_name]`" required class="mt-1.5 block w-full rounded-lg border-slate-300 shadow-sm"></div>
-                            <div><label class="block text-sm font-medium text-slate-700">Member Position <span class="text-red-600">*</span></label><select :name="`cac_members[${i}][position]`" required class="mt-1.5 block w-full rounded-lg border-slate-300 shadow-sm"><option>Member</option><option>Co-chairperson</option></select></div>
-                            <div><label class="block text-sm font-medium text-slate-700">Member NIC Number</label><input :name="`cac_members[${i}][nic_number]`" maxlength="12" inputmode="numeric" class="mt-1.5 block w-full rounded-lg border-slate-300 shadow-sm"></div>
-                            <div><label class="block text-sm font-medium text-slate-700">Member Gender</label><select :name="`cac_members[${i}][gender]`" class="mt-1.5 block w-full rounded-lg border-slate-300 shadow-sm"><option value="">Select</option><option>Male</option><option>Female</option></select></div>
-                            <div><label :for="`cac-member-contact-${i}`" class="block text-sm font-medium text-slate-700">Member Contact Number</label><input :id="`cac-member-contact-${i}`" :name="`cac_members[${i}][contact_number]`" maxlength="10" inputmode="numeric" class="mt-1.5 block w-full rounded-lg border-slate-300 shadow-sm"></div>
-                        </div>
-                    </div>
-                </template>
-                @foreach ($errors->get('cac_members.*') as $messages)
-                    @foreach ($messages as $message)<p class="mt-2 text-sm text-red-600">{{ $message }}</p>@endforeach
-                @endforeach
-            </div>
+            </section>
 
-            <div class="flex flex-wrap justify-end gap-3"><a href="{{ route('cerc-assets.index', ['tank_type' => $tankType]) }}" class="tank-rehab-secondary">Cancel</a><button type="submit" class="tank-rehab-action">{{ $editing ? 'Save changes' : 'Save scheme and CAC members' }}</button></div>
+            <div class="flex flex-wrap justify-end gap-3"><a href="{{ route('cerc-assets.index') }}" class="tank-rehab-secondary">Cancel</a><button type="submit" class="tank-rehab-action">{{ $editing ? 'Update Scheme' : 'Register Scheme' }}</button></div>
         </form>
     </section>
+    @include('business-information.partials.admin-division-script')
+    @push('head')<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">@endpush
+    @push('scripts')
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+        <script>
+            (() => {
+                const setup = () => {
+                    const element = document.getElementById('cerc-location-picker');
+                    if (!element || !window.L || element.dataset.initialized) return;
+                    element.dataset.initialized = 'true';
+                    const latInput = document.getElementById('latitude');
+                    const lngInput = document.getElementById('longitude');
+                    const label = document.getElementById('cerc-map-coordinate-label');
+                    const center = [Number(element.dataset.centerLat) || 7.8731, Number(element.dataset.centerLng) || 80.7718];
+                    const map = L.map(element, { maxBounds: [[5.85, 79.45], [9.95, 82.05]], maxBoundsViscosity: 0.8, scrollWheelZoom: false }).setView(center, 8);
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18, attribution: '&copy; OpenStreetMap contributors' }).addTo(map);
+                    let marker = null;
+                    const update = (point) => {
+                        const lat = point.lat.toFixed(7);
+                        const lng = point.lng.toFixed(7);
+                        latInput.value = lat;
+                        lngInput.value = lng;
+                        label.textContent = `${Number(lat).toFixed(6)}, ${Number(lng).toFixed(6)}`;
+                        if (!marker) marker = L.marker(point, { draggable: true }).addTo(map).bindPopup('Minor Tank scheme location');
+                        marker.setLatLng(point);
+                        marker.off('dragend').on('dragend', (event) => update(event.target.getLatLng()));
+                    };
+                    const saved = [Number(element.dataset.selectedLat), Number(element.dataset.selectedLng)];
+                    if (Number.isFinite(saved[0]) && Number.isFinite(saved[1]) && saved[0] && saved[1]) update(L.latLng(saved[0], saved[1]));
+                    map.on('click', (event) => update(event.latlng));
+                    setTimeout(() => map.invalidateSize(), 120);
+                };
+                document.addEventListener('DOMContentLoaded', setup);
+                setTimeout(setup, 250);
+            })();
+        </script>
+    @endpush
 </x-app-layout>
-
-
-

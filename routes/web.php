@@ -13,7 +13,6 @@ use App\Http\Controllers\IrrigationFarmerOrganizationController;
 use App\Http\Controllers\IrrigationInfrastructureExcelController;
 use App\Http\Controllers\CercInfrastructureAssetController;
 use App\Http\Controllers\CercInfrastructureExcelController;
-use App\Http\Controllers\CercFarmerOrganizationController;
 use App\Models\StaffProfile;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
@@ -161,15 +160,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/cerc-assets/template', [CercInfrastructureExcelController::class, 'template'])->name('cerc-assets.template');
     Route::get('/cerc-assets/export', [CercInfrastructureExcelController::class, 'export'])->name('cerc-assets.export');
     Route::post('/cerc-assets/import', [CercInfrastructureExcelController::class, 'import'])->name('cerc-assets.import');
+    Route::get('/cerc-assets/{cercInfrastructureAsset}/pdf', [CercInfrastructureAssetController::class, 'pdf'])->name('cerc-assets.pdf');
     Route::resource('cerc-assets', CercInfrastructureAssetController::class)
         ->except(['destroy'])
         ->names('cerc-assets')
         ->parameters(['cerc-assets' => 'cercInfrastructureAsset']);
     Route::delete('/cerc-assets/{cercInfrastructureAsset}', [CercInfrastructureAssetController::class, 'destroy'])
         ->name('cerc-assets.destroy');
-    Route::resource('cerc-farmer-organizations', CercFarmerOrganizationController::class)
-        ->names('cerc-farmer-organizations');
-
     Route::prefix('/component-2/tank-registration')->name('tank-registration.')->controller(TankRegistrationController::class)->group(function () {
         Route::get('/', 'index')->name('index');
         Route::get('/create', 'create')->name('create');

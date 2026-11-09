@@ -85,15 +85,11 @@
         ],
         [
             'label' => 'CERC', 'route' => 'cerc.index',
-            'active' => ['cerc-assets.*', 'cerc-farmer-organizations.*'], 'accent' => '#0f766e', 'icon' => 'records', 'section' => 'IRDCRP modules',
+            'active' => ['cerc-assets.*'], 'accent' => '#0f766e', 'icon' => 'records', 'section' => 'IRDCRP modules',
             'children' => [
                 ['label' => 'Minor Tank', 'route' => 'cerc-assets.index', 'params' => ['tank_type' => 'minor'], 'active' => 'cerc-assets.*', 'active_params' => ['tank_type' => 'minor'], 'children' => [
-                    ['label' => 'Scheme Details (A and B)', 'route' => 'cerc-assets.index', 'params' => ['tank_type' => 'minor'], 'active' => 'cerc-assets.*', 'active_params' => ['tank_type' => 'minor']],
-                    ['label' => 'Farmer Organization & Members (C and D)', 'route' => 'cerc-farmer-organizations.index', 'params' => ['tank_type' => 'minor'], 'active' => 'cerc-farmer-organizations.*', 'active_params' => ['tank_type' => 'minor']],
-                ]],
-                ['label' => 'Major Tanks', 'route' => 'cerc-assets.index', 'params' => ['tank_type' => 'major'], 'active' => 'cerc-assets.*', 'active_params' => ['tank_type' => 'major'], 'children' => [
-                    ['label' => 'Scheme Details (A and B)', 'route' => 'cerc-assets.index', 'params' => ['tank_type' => 'major'], 'active' => 'cerc-assets.*', 'active_params' => ['tank_type' => 'major']],
-                    ['label' => 'Farmer Organization & Members (C and D)', 'route' => 'cerc-farmer-organizations.index', 'params' => ['tank_type' => 'major'], 'active' => 'cerc-farmer-organizations.*', 'active_params' => ['tank_type' => 'major']],
+                    ['label' => 'Scheme Registration', 'route' => 'cerc-assets.create', 'params' => ['tank_type' => 'minor'], 'active' => 'cerc-assets.create', 'active_params' => ['tank_type' => 'minor']],
+                    ['label' => 'Scheme Details', 'route' => 'cerc-assets.index', 'params' => ['tank_type' => 'minor'], 'active' => 'cerc-assets.index', 'active_params' => ['tank_type' => 'minor']],
                 ]],
             ],
         ],

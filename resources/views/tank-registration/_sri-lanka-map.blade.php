@@ -28,7 +28,7 @@
     @endpush
 
     @push('scripts')
-        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="" defer></script>
         <script>
             (() => {
                 const sriLankaBounds = [[5.85, 79.45], [9.95, 82.05]];
@@ -72,12 +72,17 @@
 
                         const map = L.map(element, {
                             scrollWheelZoom: true,
+                            zoomAnimation: false,
+                            fadeAnimation: false,
                             maxBounds: sriLankaBounds,
                             maxBoundsViscosity: 0.65,
                         }).setView([7.8731, 80.7718], 7);
 
                         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                            maxZoom: 18,
+                            maxZoom: 16,
+                            maxNativeZoom: 16,
+                            updateWhenIdle: true,
+                            keepBuffer: 1,
                             attribution: '&copy; OpenStreetMap contributors',
                         }).addTo(map);
 
@@ -95,7 +100,8 @@
 
                             map.fitBounds(bounds, {
                                 padding: [28, 28],
-                                maxZoom: points.length === 1 ? 11 : 9,
+                                maxZoom: points.length === 1 ? 10 : 9,
+                                animate: false,
                             });
                         }
 

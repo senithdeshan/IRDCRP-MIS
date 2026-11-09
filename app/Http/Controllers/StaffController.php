@@ -76,10 +76,7 @@ class StaffController extends Controller
         'irrigation_assets' => ['label' => 'Scheme Details (A and B)', 'actions' => self::PERMISSION_ACTIONS],
         'irrigation_farmer_organizations' => ['label' => 'Farmer Organization & Members (C and D)', 'actions' => self::PERMISSION_ACTIONS],
         'cerc' => ['label' => 'CERC', 'actions' => self::PERMISSION_ACTIONS],
-        'cerc_minor_scheme_details' => ['label' => 'Minor Tank - Scheme Details (A and B)', 'actions' => self::PERMISSION_ACTIONS],
-        'cerc_minor_farmer_org_members' => ['label' => 'Minor Tank - Farmer Organization & Members (C and D)', 'actions' => self::PERMISSION_ACTIONS],
-        'cerc_major_scheme_details' => ['label' => 'Major Tanks - Scheme Details (A and B)', 'actions' => self::PERMISSION_ACTIONS],
-        'cerc_major_farmer_org_members' => ['label' => 'Major Tanks - Farmer Organization & Members (C and D)', 'actions' => self::PERMISSION_ACTIONS],
+        'cerc_minor_scheme_details' => ['label' => 'Minor Tank - Scheme Registration', 'actions' => self::PERMISSION_ACTIONS],
         'reports' => ['label' => 'Reports', 'actions' => self::PERMISSION_ACTIONS, 'legacy' => ['view' => 'reports.view']],
         'settings' => ['label' => 'Settings', 'actions' => self::PERMISSION_ACTIONS, 'legacy' => ['view' => 'settings.manage']],
     ];

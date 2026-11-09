@@ -6559,6 +6559,49 @@ a[href], button, input, select, textarea, summary, [role="button"] {
     }
 }
 
+/* CERC scheme details dashboard */
+.cerc-summary-card {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid #dbe7e1;
+    border-radius: 1rem;
+    background: linear-gradient(145deg, #fff, #f8fbf9);
+    padding: 1.1rem 1.25rem;
+    box-shadow: 0 5px 18px rgba(19, 50, 36, .045);
+}
+.cerc-summary-card::before { position: absolute; inset: 0 auto 0 0; width: 4px; background: #059669; content: ""; }
+.cerc-summary-sky::before { background: #0284c7; }
+.cerc-summary-violet::before { background: #7c3aed; }
+.cerc-summary-dot { width: .65rem; height: .65rem; border-radius: 999px; background: #10b981; box-shadow: 0 0 0 5px #d1fae5; }
+.cerc-summary-sky .cerc-summary-dot { background: #0ea5e9; box-shadow: 0 0 0 5px #e0f2fe; }
+.cerc-summary-violet .cerc-summary-dot { background: #8b5cf6; box-shadow: 0 0 0 5px #ede9fe; }
+.cerc-filter-card, .cerc-excel-card { border: 1px solid #dce7e1; border-radius: 1rem; background: #fff; padding: 1rem 1.15rem; box-shadow: 0 5px 18px rgba(19, 50, 36, .04); }
+.cerc-filter-field { display: flex; min-width: 0; flex-direction: column; gap: .3rem; color: #52635f; font-size: .7rem; font-weight: 700; }
+.cerc-filter-field :is(input, select) { width: 100%; min-width: 0; border: 1px solid #d6e0dc; border-radius: .6rem; background-color: #fff; padding: .55rem .7rem; color: #1f2937; font-size: .8rem; font-weight: 500; }
+.cerc-filter-field :is(input, select):focus { border-color: #059669; outline: 3px solid rgba(5, 150, 105, .12); }
+.cerc-filter-reset { display: inline-flex; min-height: 2.45rem; align-items: center; justify-content: center; border: 1px solid #d6e0dc; border-radius: .6rem; padding: .45rem .75rem; color: #475569; font-size: .75rem; font-weight: 700; }
+.cerc-filter-reset:hover { background: #f8faf9; color: #0f5132; }
+.cerc-excel-card { padding: .85rem 1rem; }
+.cerc-excel-icon { display: grid; width: 2.25rem; height: 2.25rem; flex: 0 0 auto; place-items: center; border-radius: .65rem; background: #e8f6ee; color: #08734f; font-size: .65rem; font-weight: 800; }
+.cerc-excel-link, .cerc-excel-upload { display: inline-flex; min-height: 2.15rem; align-items: center; justify-content: center; border: 1px solid #d8e2df; border-radius: .55rem; background: #fff; padding: .4rem .7rem; color: #355448; font-size: .72rem; font-weight: 700; transition: background-color 150ms ease, border-color 150ms ease; }
+.cerc-excel-link:hover { border-color: #9bc8ae; background: #f0fdf4; }
+.cerc-excel-input { min-width: 0; flex: 1; color: #64748b; font-size: .75rem; }
+.cerc-excel-input::file-selector-button { margin-right: .65rem; border: 0; border-radius: .45rem; background: #f1f5f3; padding: .4rem .65rem; color: #355448; font-size: .7rem; font-weight: 700; cursor: pointer; }
+.cerc-excel-upload { border-color: #08734f; background: #08734f; color: #fff; cursor: pointer; }
+.cerc-excel-upload:hover { background: #075e42; }
+.cerc-page-size-form { display: flex; align-items: center; gap: .55rem; color: #64748b; font-size: .72rem; font-weight: 700; }
+.cerc-page-size-form select { min-width: 4.5rem; border: 1px solid #d6e0dc; border-radius: .55rem; background: #fff; padding: .42rem .65rem; color: #334155; font-size: .75rem; }
+.cerc-pagination-footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .8rem; border-top: 1px solid #e8eeeb; padding: .85rem 1.25rem; color: #64748b; font-size: .75rem; }
+.cerc-pagination-footer nav { margin-left: auto; }
+.cerc-pagination-footer nav a, .cerc-pagination-footer nav span[aria-current="page"] > span { border-radius: .5rem; }
+@media (max-width: 639px) {
+    .cerc-filter-card, .cerc-excel-card { padding: .85rem; }
+    .cerc-excel-link { flex: 1; }
+    .cerc-excel-upload { width: 100%; }
+    .cerc-pagination-footer { align-items: flex-start; flex-direction: column; padding: .8rem; }
+    .cerc-pagination-footer nav { margin-left: 0; width: 100%; }
+}
+
 /* Shared responsive guardrails for screens and modules using utility classes. */
 :root {
     --irdcrp-ink: #172b27;

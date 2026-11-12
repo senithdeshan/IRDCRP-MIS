@@ -17,20 +17,22 @@
             $isRegister = request()->routeIs('register');
         @endphp
 
-        <div class="auth-page {{ $isRegister ? 'auth-page-register' : 'auth-page-login' }}">
+        <div class="auth-page auth-page-photos {{ $isRegister ? 'auth-page-register' : 'auth-page-login' }}">
             <main class="auth-stage">
                 <aside class="auth-photo-timeline" aria-hidden="true">
                     <div class="auth-slide-frame">
-                        <img src="{{ asset($isRegister ? 'images/auth/register-background.jpg' : 'images/auth/timeline-1.jpg') }}" alt="" class="auth-slide auth-slide-one">
+                        @foreach ([1, 2, 3, 4, 5] as $slide)
+                            <img src="{{ asset('images/auth/cover'.$slide.'.jpeg') }}" alt="" @class(['auth-slide', 'is-active' => $slide === 1])>
+                        @endforeach
                         <div class="auth-slide-caption">
-                            <span>{{ $isRegister ? 'IRDCRP staff access' : 'IRDCRP field stories' }}</span>
-                            <strong>{{ $isRegister ? 'Register for secure MIS access' : 'Farmers, fields and resilience' }}</strong>
+                            <span>{{ $isRegister ? 'IRDCRP staff access' : 'IRDCRP in the field' }}</span>
+                            <strong>{{ $isRegister ? 'Join the team building resilient communities.' : 'Growing stronger communities together.' }}</strong>
                         </div>
                     </div>
                     <div class="auth-slide-dots">
-                        <span class="is-active"></span>
-                        <span></span>
-                        <span></span>
+                        @foreach ([1, 2, 3, 4, 5] as $dot)
+                            <span @class(['is-active' => $dot === 1])></span>
+                        @endforeach
                     </div>
                 </aside>
 
@@ -58,5 +60,22 @@
                 </section>
             </main>
         </div>
+        <script>
+            (() => {
+                const carousel = document.querySelector('.auth-page-photos');
+                if (!carousel) return;
+
+                const slides = [...carousel.querySelectorAll('.auth-slide')];
+                const dots = [...carousel.querySelectorAll('.auth-slide-dots span')];
+                if (slides.length < 2) return;
+
+                let activeIndex = 0;
+                window.setInterval(() => {
+                    activeIndex = (activeIndex + 1) % slides.length;
+                    slides.forEach((slide, index) => slide.classList.toggle('is-active', index === activeIndex));
+                    dots.forEach((dot, index) => dot.classList.toggle('is-active', index === activeIndex));
+                }, 2000);
+            })();
+        </script>
     </body>
 </html>

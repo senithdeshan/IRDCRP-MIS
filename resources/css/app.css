@@ -7222,3 +7222,155 @@ dialog.permission-alert::backdrop {
         transition: none;
     }
 }
+
+/* Login and registration pages: five project photographs beside a clean form panel. */
+.auth-page-photos {
+    min-height: 100vh;
+    min-height: 100svh;
+    overflow-y: auto;
+    background:
+        radial-gradient(ellipse at 18% 12%, rgba(114, 172, 85, 0.22), transparent 35%),
+        linear-gradient(135deg, #09271e, #173e2b 58%, #0b2a20);
+    padding: clamp(1rem, 3vw, 2.5rem);
+}
+
+.auth-page-photos .auth-stage {
+    display: grid;
+    width: min(100%, 88rem);
+    min-height: min(44rem, calc(100svh - 3rem));
+    grid-template-columns: minmax(0, 1.12fr) minmax(0, 0.88fr);
+    align-items: stretch;
+    gap: 0;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.55);
+    border-radius: 1.35rem;
+    background: #fff;
+    box-shadow: 0 30px 90px rgba(0, 0, 0, 0.32);
+}
+
+.auth-page-photos .auth-photo-timeline {
+    min-height: 100%;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.auth-page-photos .auth-slide-frame::after {
+    background: linear-gradient(180deg, rgba(2, 24, 16, 0.02) 25%, rgba(2, 24, 16, 0.08) 48%, rgba(2, 24, 16, 0.78) 100%);
+}
+
+.auth-page-photos .auth-slide {
+    opacity: 0;
+    transform: none;
+    animation: none;
+    transition: opacity 350ms ease-in-out;
+}
+
+.auth-page-photos .auth-slide.is-active {
+    opacity: 1;
+}
+
+.auth-page-photos .auth-slide-caption {
+    padding: 7rem clamp(1.5rem, 4vw, 3rem) 3.2rem;
+}
+
+.auth-page-photos .auth-slide-caption span {
+    color: #d8f0bc;
+}
+
+.auth-page-photos .auth-slide-caption strong {
+    max-width: 25rem;
+    font-size: clamp(1.8rem, 3.2vw, 2.75rem);
+}
+
+.auth-page-photos .auth-slide-dots span {
+    width: 0.48rem;
+    height: 0.48rem;
+    opacity: 0.35;
+    transition: width 160ms ease, opacity 160ms ease, background-color 160ms ease;
+}
+
+.auth-page-photos .auth-slide-dots span.is-active {
+    width: 1.2rem;
+    opacity: 1;
+    background: #fff;
+}
+
+.auth-page-photos .auth-panel {
+    min-width: 0;
+    background: #fff;
+}
+
+.auth-page-photos .auth-brand-card,
+.auth-page-register.auth-page-photos .auth-brand-card {
+    min-height: 100%;
+    justify-content: center;
+    overflow: visible;
+    border: 0;
+    border-radius: 0;
+    background: #fff;
+    box-shadow: none;
+    padding: clamp(1.35rem, 3vw, 3rem);
+}
+
+.auth-page-photos .auth-brand-card::before {
+    height: 0.3rem;
+    background: linear-gradient(90deg, #176a3a, #79b642, #e3c555);
+}
+
+.auth-page-photos .auth-brand-card::after {
+    display: none;
+}
+
+.auth-page-photos .auth-logo-strip {
+    background: #f7faf7;
+    border-radius: 0.85rem;
+}
+
+.auth-page-photos .auth-card {
+    width: min(100%, 28rem);
+    transform: none;
+}
+
+.auth-page-photos .auth-footer-note {
+    color: #64766a;
+}
+
+@media (max-width: 640px) {
+    .auth-page-photos {
+        place-items: start center;
+        padding: 0.75rem;
+    }
+
+    .auth-page-photos .auth-stage {
+        width: min(100%, 38rem);
+        min-height: auto;
+        grid-template-columns: minmax(0, 1fr);
+        border-radius: 1rem;
+    }
+
+    .auth-page-photos .auth-photo-timeline {
+        min-height: 13rem;
+    }
+
+    .auth-page-photos .auth-brand-card,
+    .auth-page-register.auth-page-photos .auth-brand-card {
+        min-height: auto;
+        padding: 1.15rem;
+    }
+
+    .auth-page-photos .auth-slide-caption {
+        padding: 3.5rem 1.2rem 2rem;
+    }
+
+    .auth-page-photos .auth-slide-caption strong {
+        font-size: 1.55rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .auth-page-photos .auth-slide,
+    .auth-page-photos .auth-slide-dots span {
+        transition: none;
+    }
+}
